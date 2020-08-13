@@ -1,0 +1,221 @@
+.content {
+	text-align: center;
+	color: #d4dadd;
+}
+
+body {
+	background-color: #222;
+}
+
+.content a {
+	color: #737259;
+}
+
+.content a.button {
+	color: inherit;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-weight: bold;
+	text-transform: uppercase;
+	letter-spacing: 3px;
+}
+
+.nav-container, .toast-container, .recipe-container {
+	max-width: 500px;
+	width: 500px;
+}
+
+.recipe-container {
+	padding: 1em 0.5em;
+}
+
+.toast-container>.toast {
+	margin: 1em 0.5em;
+}
+
+.ingredients-table {
+	width: 100%;
+}
+
+.ingredients-table > *:nth-child(even) {
+	background-color: #343434;
+}
+
+.ingredient-amount {
+	text-align: right;
+	padding: 0.5em 0.25em 0.5em 0.5em;
+}
+
+.ingredient-amount {
+	width: 40%;
+}
+
+.ingredient-name {
+	  width: 60%;
+}
+
+.editable .ingredient-amount, .editable .ingredient-name {
+	display: flex;
+	align-items: center;
+}
+
+.ingredient-name {
+	text-align: left;
+	padding: 0.5em 0.5em 0.5em 0.25em;
+}
+
+.editable input:hover {
+	color: aliceblue;
+}
+
+.editable input, .editable textarea {
+	border: 1px solid #343434;
+	padding: 0.2em 0.5em;
+	text-align: inherit;
+	background-color: inherit;
+	color: inherit;
+	min-width: 0;
+	width: 100%;
+}
+
+.editable .ingredients-table > *:nth-child(even) input {
+	border: 1px solid #222;
+}
+
+.editable textarea {
+	width: 100%;
+	overflow-x: auto;
+	resize: vertical;
+	text-align: left;
+	padding: 0.5em;
+}
+
+textarea#instructions {
+	min-height: 20em;
+}
+
+.ingredients-section .toolbar-right a {
+	font-size: 1.2rem;
+}
+
+.ingredients-section .toolbar-right-3, .ingredients-section .button-add {
+	visibility: hidden;
+}
+
+.ingredients-row-wrapper {
+	display: flex;
+}
+
+.ingredient-unit-input {
+	flex-basis: 4.3em;
+	min-width: 0;
+	flex-shrink: 0;
+}
+
+.ingredient-amount-input {
+	flex-basis: 4em;
+	min-width: 0;
+	flex-grow: 1;
+}
+
+.ingredient-name-input {
+	width: 100%;
+}
+
+.ingredient-tools {
+	flex: 1 0 auto;
+}
+
+.toolbar-wrapper {
+	display: flex;
+	flex-direction: row;
+}
+
+.toolbar-left-3, .toolbar-right-3 {
+	flex: 1 0 5.5em;
+}
+
+.toolbar-left-1, .toolbar-right-1 {
+	flex: 1 0 1.5em;
+}
+
+.toolbar-center {
+	flex-grow: 2;
+}
+
+.toolbar-center input.editable, .submit-button {
+	width: 100%;
+}
+
+.toolbar-right>div {
+	float: right;
+}
+
+.toolbar-left>div {
+	float: left;
+}
+
+.button {
+	cursor: pointer;
+	padding: 0.25em;
+	vertical-align: middle;
+	text-align: center;
+}
+
+.button.fa {
+	width: 1.5em;
+	height: 1.5em;
+}
+
+.button:hover {
+	text-decoration: none;
+	background-color: #343434;
+}
+
+.button:disabled {
+	opacity: 0.65;
+}
+
+.submit-button {
+	background-color: inherit;
+	color: inherit;
+	border: 1px solid #343434;
+	padding: 0.5em;
+	border-radius: 0.5em;
+}
+
+.button-add-section {
+	font-size: 2rem;
+}
+
+#defaults {
+	display: none;
+}
+
+.recipes-list {
+	list-style-position: inside;
+	padding: 0;
+}
+
+.recipes-list>li {
+	padding: 0.125rem;
+}
+
+.toast {
+	background-color: #343434;
+}
+
+#toast-submit-failed {
+	max-width: unset;
+}
+
+.nav-link.fa {
+	font-size: 1.5rem;
+	width: 2.5rem;
+	text-align: center;
+}
+
+.navbar-nav {
+	flex-direction: row;
+}

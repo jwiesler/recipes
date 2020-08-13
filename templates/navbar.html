@@ -1,0 +1,19 @@
+<nav class="navbar navbar-expand-sm navbar-dark bg-dark">
+    <div class="nav-container center d-flex justify-content-between">
+    <a class="navbar-brand" href="{{ .BaseUrl }}/">Rezepte</a>
+    <div class="d-flex">
+        <ul class="navbar-nav mx-1">
+            {{- if .Id -}}
+            <li class="nav-item">
+                <a class="nav-link fa fa-pencil" href="{{ .BaseUrl }}/edit/{{ .Id }}"></a>
+            </li>
+            {{- end -}}
+            <li class="nav-item">
+                <a class="nav-link fa fa-plus" href="{{ .BaseUrl }}/create"></a>
+            </li>
+        </ul>
+
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+    </div>
+    </div>
+</nav>

@@ -1,0 +1,109 @@
+{{- define "ingredient-row" -}}
+    <div class="ingredients-row-wrapper hover-show-display-base">
+        <div class="ingredient-amount vspace-between-small">
+            <input class="ingredient-amount-input editable" placeholder="Menge" value="{{ .Amount }}" /><input class="ingredient-unit-input editable" value="{{ .Unit }}" placeholder="Einheit" />
+        </div>
+        <div class="ingredient-name vspace-between-small">
+            <input class="ingredient-name-input editable" placeholder="Zutat" value="{{ .Name }}" />
+            <div class="ingredient-tools hover-show-display vspace-between-small"><a class="button button-up fa fa-arrow-up"></a><a class="button button-down fa fa-arrow-down"></a><a class="button button-delete fa fa-times"></a></div>
+        </div>
+    </div>
+{{- end -}}
+
+{{- define "ingredients-section" -}}
+    <div class="ingredients-section hover-show-visible-base">
+        <div class="toolbar-wrapper vspace-between-small">
+            <div class="toolbar-left-3"></div>
+            <div class="toolbar-center"><h6><input class="ingredients-section-name-input editable" value="{{ .Heading }}" placeholder="Überschrift" /></h6></div>
+            <div class="toolbar-right-3 hover-show-visible">
+                <div class="vspace-between-small"><a class="button button-up fa fa-arrow-up"></a><a class="button button-down fa fa-arrow-down"></a><a class="button button-delete fa fa-times"></a></div>
+            </div>
+        </div>
+        <div class="ingredients-table">
+            {{- range .Ingredients -}}
+                {{- template "ingredient-row" (dict "Amount" .Amount "Unit" .Unit "Name" .Name ) -}}
+            {{- end -}}
+        </div>
+        <div><a class="button button-add fa fa-plus hover-show-visible"></a></div>
+    </div>
+{{- end -}}
+
+<!DOCTYPE html>
+<head>
+    {{ template "head.html" . }}
+    <script src="{{ .BaseUrl }}/static/js/edit.js"></script>
+</head>
+<body>
+    {{ template "navbar.html" . }}
+    <div class="content">
+        <div class="center recipe-container editable">
+            <form id="recipe-edit-form" method="post" action="{{ .BaseUrl }}
+            {{- if .Recipe -}}
+                /edit/{{ .Id }}
+            {{- else -}}
+                /create
+            {{- end -}}
+            ">
+                <div class="spacing-between-large">
+                    <div class="spacing-between-small">
+                        <h2><input id="name" class="editable" placeholder="Name" autocomplete="off" {{- with .Recipe }} value="{{ .Name }}"{{- end -}} /></h2>
+                        <p><input id="description" class="editable" placeholder="Beschreibung" autocomplete="off" {{- with .Recipe }} value="{{ .Description }}"{{- end -}} /></p>
+                        <div>
+                            {{- with .Recipe -}}
+                                {{- if .ImagePath -}}
+                                   <img id="image" class="parent-sized" src="{{ .ImagePath }}" />
+                                {{- end -}}
+                            {{- end -}}
+                        </div>
+                    </div>
+
+                    <div id="ingredients" class="spacing-between">
+                        <h4>Zutaten</h4>
+                        <div class="ingredients-sections spacing-between">
+                        {{- if .Recipe -}}
+                            {{- range .Recipe.IngredientsSections -}}
+                                {{ template "ingredients-section" (dict "Heading" .Heading "Ingredients" .Ingredients) }}
+                            {{- end -}}
+                        {{- end -}}
+                        </div>
+                        <div><a class="button button-add-section fa fa-plus"></a></div>
+                    </div>
+
+                    <div class="spacing-between-small">
+                        <h4>Zubereitung</h4>
+                        <textarea id="instructions" class="editable" autocomplete="off" placeholder="Zubereitung" >{{- with .Recipe -}}{{ .Instructions }}{{- end -}}</textarea>
+                    </div>
+
+                    <div class="spacing-between-small">
+                        <h4>Quelle</h4>
+                        <textarea id="source" class="editable" autocomplete="off" placeholder="Quelle" >{{- with .Recipe -}}{{ .Source }}{{- end -}}</textarea>
+                    </div>
+
+                    <div>
+                        <button class="button submit-button" >Speichern</button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="center toast-container fixed-bottom">
+                <div id="toast-submit-failed" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true" data-delay="5000">
+                    <div class="toast-header">
+                        <strong class="mr-auto">Speichern fehlgeschlagen</strong>
+                        <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="toast-body"></div>
+                </div>
+            </div>
+        </div>
+        <div id="defaults">
+            <div id="default-row">
+                {{- template "ingredient-row" (dict "Amount" "" "Unit" "" "Name" "") -}}
+            </div>
+            <div id="default-section">
+                {{- template "ingredients-section" (dict "Heading" "" "Ingredients" (seq)) -}}
+            </div>
+        </div>
+    </div>
+</body>
