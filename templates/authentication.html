@@ -1,0 +1,22 @@
+<head>
+    <title>Authentifizierung</title>
+</head>
+<body>
+    <h2>Nutzer</h2>
+    <p>
+        {{- if .CookieSet -}}
+            {{- if .User -}}
+                {{- .User -}}
+            {{- else -}}
+                Unbekannter Nutzer
+            {{- end -}}
+        {{- else -}}
+            Cookie nicht gesetzt
+        {{- end -}}
+    </p>
+    <h2>Cookie setzen</h2>
+    <form action="{{ .BaseUrl }}/authentication/set" method="post">
+        <input name="cookie-input" type="text" value="{{ .Token }}"/>
+        <input name="submit" type="submit" value="Setzen"/>
+    </form>
+</body>

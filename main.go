@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"github.com/dlclark/regexp2"
 	"github.com/fsnotify/fsnotify"
 	"github.com/gorilla/mux"
 	"github.com/urfave/cli"
@@ -100,9 +99,13 @@ type RecipesContext struct {
 }
 
 type RecipesParams struct {
-	templatesDirPath, templatesPattern, recipesDirPath, tokensPath string
-	unsecure                                                       bool
-	baseUrl                                                        string
+	templatesDirPath string
+	templatesPattern string
+	recipesDirPath   string
+	tokensPath       string
+	tokensKeyPath    string
+	unsecure         bool
+	baseUrl          string
 }
 
 type ServerParams struct {
@@ -140,16 +143,36 @@ func (ctx *RecipesContext) StartWatchTemplates(folder string, pattern string) er
 	})
 }
 
-func Init(params *RecipesParams) (*RecipesContext, error) {
-	templates := PageTemplates{}
-	logger.Info("Loading templates ", zap.String("path", params.templatesDirPath), zap.String("pattern", params.templatesPattern))
-	err := templates.Load(params.templatesDirPath, params.templatesPattern)
+func CreateTokensManager(params *RecipesParams) (*TokenManager, error) {
+	logger.Info("Loading tokens key", zap.String("path", params.tokensKeyPath))
+	key, err := ReadTokensKeyFile(params.tokensKeyPath)
 	if err != nil {
 		return nil, err
 	}
+	logger.Info("Loading tokens file", zap.String("path", params.tokensPath))
+	if _, err := os.Stat(params.tokensPath); os.IsNotExist(err) {
+		logger.Info("Tokens file not found, creating new")
+		m := make(map[Identifier]Token)
+		b, err := json.Marshal(m)
+		if err != nil {
+			return nil, err
+		}
+		if err = ioutil.WriteFile(params.tokensPath, b, 0666); err != nil {
+			return nil, err
+		}
+	}
+	tokens := NewTokenManager("token", key)
+	err = tokens.ReloadFromFile(params.tokensPath)
+	if err != nil {
+		return nil, err
+	}
+	logger.Info("Tokens loaded", zap.Int("count", len(tokens.tokens)))
+	return tokens, nil
+}
 
+func CreateRecipesDatabase(params *RecipesParams) (*RecipesDatabase, error) {
 	logger.Info("Loading recipes", zap.String("path", params.recipesDirPath))
-	err = os.MkdirAll(params.recipesDirPath, os.ModePerm)
+	err := os.MkdirAll(params.recipesDirPath, os.ModePerm)
 	if err != nil {
 		return nil, err
 	}
@@ -163,33 +186,30 @@ func Init(params *RecipesParams) (*RecipesContext, error) {
 		recipes[r.Id] = r.Recipe
 	}
 	logger.Info("Recipes loaded", zap.Int("count", len(recipes)))
+	return &RecipesDatabase{
+		Path:    params.recipesDirPath,
+		recipes: recipes,
+	}, nil
+}
 
-	logger.Info("Loading tokens file", zap.String("path", params.tokensPath))
-	tokens := NewTokenManager("token")
-	if _, err := os.Stat(params.tokensPath); os.IsNotExist(err) {
-		logger.Info("Tokens file not found, creating new")
-		b, err := json.Marshal(make(map[Identifier]Token))
-		if err != nil {
-			return nil, err
-		}
-		if err = ioutil.WriteFile(params.tokensPath, b, 0666); err != nil {
-			return nil, err
-		}
-	}
-	err = tokens.ReloadFromFile(params.tokensPath)
+func Init(params *RecipesParams) (*RecipesContext, error) {
+	tokens, err := CreateTokensManager(params)
 	if err != nil {
 		return nil, err
 	}
-	logger.Info("Tokens loaded", zap.Int("count", len(tokens.tokens)))
-
+	templates := PageTemplates{}
+	logger.Info("Loading templates ", zap.String("path", params.templatesDirPath), zap.String("pattern", params.templatesPattern))
+	err = templates.Load(params.templatesDirPath, params.templatesPattern)
+	if err != nil {
+		return nil, err
+	}
+	database, err := CreateRecipesDatabase(params)
+	if err != nil {
+		return nil, err
+	}
 	watcher, err := NewFileWatcher(1 * time.Second)
 	if err != nil {
 		return nil, err
-	}
-
-	database := &RecipesDatabase{
-		Path:    params.recipesDirPath,
-		recipes: recipes,
 	}
 
 	logger.Info("Creating renderer", zap.String("base-url", params.baseUrl))
@@ -243,32 +263,34 @@ func AuthenticatedTokenIdentifier(r *http.Request) (Identifier, bool) {
 
 func (ctx *RecipesContext) HandleAuthenticate(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		id, ok := ctx.TokenManager.GetFromRequest(r)
+		identifier, ok := ctx.TokenManager.GetFromRequest(r)
 		if !ok {
 			http.Error(w, "Access denied", http.StatusForbidden)
 			return
 		}
-		c := context.WithValue(r.Context(), "token-identifier", id)
+		c := context.WithValue(r.Context(), "token-identifier", identifier)
 		h.ServeHTTP(w, r.WithContext(c))
 	})
 }
 
 func (ctx *RecipesContext) HandleAuthentication(w http.ResponseWriter, r *http.Request) {
-	var i Identifier
-	if _, err := r.Cookie(ctx.TokenManager.CookieName); err != nil {
-		i = "Cookie not set"
-	} else if id, ok := ctx.TokenManager.GetFromRequest(r); ok {
-		i = id
-	} else {
-		i = "Unknown user"
+	var user Identifier
+	var cookieSet bool
+	token, cookieSet := ctx.TokenManager.GetTokenFromRequest(r)
+	if cookieSet {
+		if id, ok := ctx.TokenManager.Get(token); ok {
+			user = id
+		}
 	}
-
-	WriteString(w, string(i))
+	if err := ctx.Renderer.RenderAuthentication(w, cookieSet, string(user), string(token)); err != nil {
+		RenderError(err)
+	}
 }
 
 func (ctx *RecipesContext) HandleAuthenticationSet(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	token := vars["token"]
+	_ = r.ParseForm()
+
+	token := r.Form.Get("cookie-input")
 	cookie := http.Cookie{
 		Name:     "token",
 		Value:    token,
@@ -279,31 +301,7 @@ func (ctx *RecipesContext) HandleAuthenticationSet(w http.ResponseWriter, r *htt
 		Secure:   ctx.Secure,
 	}
 	http.SetCookie(w, &cookie)
-	if _, err := w.Write([]byte("Success")); err != nil {
-		http.Error(w, "Failed to set cookie", 400)
-		logger.Warn("Failed to set cookie", zap.String("token", token), zap.Error(err))
-		return
-	}
-}
-
-var identifierRegex = regexp2.MustCompile("^[A-Za-z0-9 _-]+$", regexp2.Singleline)
-
-func (ctx *RecipesContext) HandleAuthenticationGenerate(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	identifier := strings.TrimSpace(vars["identifier"])
-	if ok, _ := identifierRegex.MatchString(identifier); !ok {
-		http.Error(w, "Identifier contains invalid characters", 400)
-		logger.Info("Identifier contains invalid characters", zap.String("identifier", identifier))
-		return
-	}
-
-	token, err := ctx.TokenManager.GenerateFor(Identifier(identifier))
-	if err != nil {
-		http.Error(w, "Failed to generate a token", 400)
-		logger.Warn("Failed to generate a token", zap.String("identifier", identifier), zap.Error(err))
-		return
-	}
-	WriteString(w, string(token))
+	ctx.RedirectTo(w, r,"/authentication")
 }
 
 func RenderError(err error) {
@@ -535,8 +533,7 @@ func InitHandlers(r *mux.Router, ctx *RecipesContext) {
 	r.HandleFunc("/edit/{recipe}", ctx.HandleEdit).Methods("GET").Schemes(scheme)
 
 	r.HandleFunc("/authentication", ctx.HandleAuthentication).Methods("GET").Schemes(scheme)
-	r.HandleFunc("/authentication/generate/{identifier}", ctx.HandleAuthenticationGenerate).Methods("GET").Schemes(scheme)
-	r.HandleFunc("/authentication/set/{token}", ctx.HandleAuthenticationSet).Methods("GET").Schemes(scheme)
+	r.HandleFunc("/authentication/set", ctx.HandleAuthenticationSet).Methods("POST").Schemes(scheme)
 
 	r.Handle("/create", ctx.HandleAuthenticate(http.HandlerFunc(ctx.HandleCreateResponse))).Methods("POST").Schemes(scheme)
 	r.Handle("/delete/{recipe}", ctx.HandleAuthenticate(http.HandlerFunc(ctx.HandleDeleteResponse))).Methods("POST").Schemes(scheme)
@@ -585,7 +582,7 @@ func InitLogger(file string, l zapcore.Level) *zap.Logger {
 func main() {
 	params := ServerParams{}
 	logger = InitLogger("logs/server.log", zap.DebugLevel)
-	defer logger.Sync()
+	defer func() { _ = logger.Sync() }()
 
 	app := &cli.App{
 		Flags: []cli.Flag{
@@ -624,6 +621,12 @@ func main() {
 				Value:       "tokens.json",
 				Usage:       "tokens file to use for authorization",
 				Destination: &params.tokensPath,
+			},
+			&cli.StringFlag{
+				Name:        "tokens-key",
+				Value:       "tokens.key",
+				Usage:       "tokens key file to use for authorization",
+				Destination: &params.tokensKeyPath,
 			},
 			&cli.StringFlag{
 				Name:        "recipes",

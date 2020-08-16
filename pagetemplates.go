@@ -19,6 +19,7 @@ type PageTemplates struct {
 	homePageTemplate       *template.Template
 	recipePageTemplate     *template.Template
 	editRecipePageTemplate *template.Template
+	authenticationTemplate *template.Template
 	rwLock                 sync.RWMutex
 }
 
@@ -122,6 +123,13 @@ func (t *PageTemplates) RenderRecipe(wr io.Writer, data interface{}) error {
 	return RenderAndMinify(te, wr, data)
 }
 
+func (t *PageTemplates) RenderAuthentication(wr io.Writer, data interface{}) error {
+	t.rwLock.RLock()
+	te := t.authenticationTemplate
+	t.rwLock.RUnlock()
+	return RenderAndMinify(te, wr, data)
+}
+
 func (t *PageTemplates) Load(folder string, pattern string) error {
 	t.rwLock.Lock()
 	defer t.rwLock.Unlock()
@@ -146,12 +154,34 @@ func (t *PageTemplates) Load(folder string, pattern string) error {
 	if t.editRecipePageTemplate == nil {
 		return errors.New("edit recipe page template missing")
 	}
+
+	t.authenticationTemplate = t.templates.Lookup("authentication.html")
+	if t.authenticationTemplate == nil {
+		return errors.New("authentication page template missing")
+	}
+
 	return nil
 }
 
 type PageRenderer struct {
 	BaseUrl   string
 	Templates *PageTemplates
+}
+
+func (r *PageRenderer) RenderAuthentication(w io.Writer, cookieSet bool, user string, token string) error {
+	type AuthenticationData struct {
+		CookieSet bool
+		User string
+		Token string
+		BaseUrl string
+	}
+
+	return r.Templates.RenderAuthentication(w, AuthenticationData{
+		CookieSet: cookieSet,
+		User: user,
+		Token: token,
+		BaseUrl: r.BaseUrl,
+	})
 }
 
 func (r *PageRenderer) RenderHome(w io.Writer, recipes map[string]*RawRecipe) error {
