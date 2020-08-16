@@ -281,7 +281,7 @@ func (ctx *RecipesContext) HandleAuthenticationSet(w http.ResponseWriter, r *htt
 	http.SetCookie(w, &cookie)
 	if _, err := w.Write([]byte("Success")); err != nil {
 		http.Error(w, "Failed to set cookie", 400)
-		logger.Debug("Failed to set cookie", zap.String("token", token), zap.Error(err))
+		logger.Warn("Failed to set cookie", zap.String("token", token), zap.Error(err))
 		return
 	}
 }
@@ -293,34 +293,34 @@ func (ctx *RecipesContext) HandleAuthenticationGenerate(w http.ResponseWriter, r
 	identifier := strings.TrimSpace(vars["identifier"])
 	if ok, _ := identifierRegex.MatchString(identifier); !ok {
 		http.Error(w, "Identifier contains invalid characters", 400)
-		logger.Debug("Identifier contains invalid characters", zap.String("identifier", identifier))
+		logger.Info("Identifier contains invalid characters", zap.String("identifier", identifier))
 		return
 	}
 
 	token, err := ctx.TokenManager.GenerateFor(Identifier(identifier))
 	if err != nil {
 		http.Error(w, "Failed to generate a token", 400)
-		logger.Debug("Failed to generate a token", zap.String("identifier", identifier), zap.Error(err))
+		logger.Warn("Failed to generate a token", zap.String("identifier", identifier), zap.Error(err))
 		return
 	}
 	WriteString(w, string(token))
 }
 
-func HandleRenderError(err error) {
+func RenderError(err error) {
+	logger.Panic("Failed to write string", zap.Error(err))
+}
+
+func WriteString(w http.ResponseWriter, s string) {
+	_, err := w.Write([]byte(s))
 	if err != nil {
 		logger.Panic("Failed to write string", zap.Error(err))
 	}
 }
 
-func WriteString(w http.ResponseWriter, s string) {
-	_, err := w.Write([]byte(s))
-	HandleRenderError(err)
-}
-
 func (ctx *RecipesContext) HandleHome(w http.ResponseWriter, _ *http.Request) {
 	s, err := ctx.Recipes.GetHomePage()
 	if err != nil {
-		HandleRenderError(err)
+		RenderError(err)
 	}
 	WriteString(w, s)
 }
@@ -334,7 +334,7 @@ func (ctx *RecipesContext) HandleShow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err != nil {
-		HandleRenderError(err)
+		RenderError(err)
 	}
 	WriteString(w, s)
 }
@@ -342,7 +342,7 @@ func (ctx *RecipesContext) HandleShow(w http.ResponseWriter, r *http.Request) {
 func (ctx *RecipesContext) HandleCreate(w http.ResponseWriter, _ *http.Request) {
 	s, err := ctx.Recipes.GetCreatePage()
 	if err != nil {
-		HandleRenderError(err)
+		RenderError(err)
 	}
 	WriteString(w, s)
 }
@@ -355,14 +355,14 @@ func ReadRecipeRequestResponse(w http.ResponseWriter, r *http.Request, identifie
 	recipe, err := ReadRecipeFromResponse(r.Body)
 	if err != nil {
 		http.Error(w, "Failed to read edit post request body", 400)
-		logger.Debug("Failed to read edit post request body", zap.Error(err), User(identifier))
+		logger.Warn("Failed to read edit post request body", zap.Error(err), User(identifier))
 		return nil, "", false
 	}
 
 	rid = TransformToIdString(strings.TrimSpace(recipe.Name))
 	if len(rid) == 0 {
 		http.Error(w, "Can't create a recipe with an empty id", 400)
-		logger.Debug("Can't create a recipe with an empty id", User(identifier))
+		logger.Info("Can't create a recipe with an empty id", User(identifier))
 		return nil, "", false
 	}
 	return recipe, rid, true
@@ -378,7 +378,7 @@ func (ctx *RecipesContext) RedirectToRecipe(w http.ResponseWriter, r *http.Reque
 
 func ErrorPlaylistAlreadyExists(w http.ResponseWriter, rid string, identifier Identifier) {
 	http.Error(w, "A recipe with this id already exists", 400)
-	logger.Debug("A recipe with this id already exists", zap.String("id", rid), User(identifier))
+	logger.Info("A recipe with this id already exists", zap.String("id", rid), User(identifier))
 }
 
 func (ctx *RecipesContext) HandleCreateResponse(w http.ResponseWriter, r *http.Request) {
@@ -396,11 +396,11 @@ func (ctx *RecipesContext) HandleCreateResponse(w http.ResponseWriter, r *http.R
 
 	if err != nil {
 		http.Error(w, "Failed to add recipe", 400)
-		logger.Debug("Failed to add recipe", zap.String("identifier", rid), User(identifier), zap.Error(err))
+		logger.Warn("Failed to add recipe", zap.String("identifier", rid), User(identifier), zap.Error(err))
 		return
 	}
 
-	logger.Debug("Created recipe", zap.String("identifier", rid), User(identifier), zap.Error(err))
+	logger.Info("Created recipe", zap.String("identifier", rid), User(identifier), zap.Error(err))
 	ctx.RedirectToRecipe(w, r, rid)
 }
 
@@ -414,7 +414,7 @@ func (ctx *RecipesContext) HandleEdit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err != nil {
-		HandleRenderError(err)
+		RenderError(err)
 	}
 	WriteString(w, s)
 }
@@ -436,11 +436,11 @@ func (ctx *RecipesContext) HandleEditResponse(w http.ResponseWriter, r *http.Req
 	}
 	if err != nil {
 		http.Error(w, "Failed to replace recipe", 400)
-		logger.Debug("Failed to replace recipe", zap.String("id", rid), zap.String("old-id", oldRid), User(identifier), zap.Error(err))
+		logger.Warn("Failed to replace recipe", zap.String("id", rid), zap.String("old-id", oldRid), User(identifier), zap.Error(err))
 		return
 	}
 
-	logger.Debug("Replaced recipe", zap.String("id", rid), zap.String("old-id", oldRid), User(identifier))
+	logger.Info("Replaced recipe", zap.String("id", rid), zap.String("old-id", oldRid), User(identifier))
 	ctx.RedirectToRecipe(w, r, rid)
 }
 
@@ -456,10 +456,10 @@ func (ctx *RecipesContext) HandleDeleteResponse(w http.ResponseWriter, r *http.R
 	}
 	if err != nil {
 		http.Error(w, "Failed to delete recipe", 400)
-		logger.Debug("Failed to delete recipe", zap.String("id", rid), User(identifier), zap.Error(err))
+		logger.Warn("Failed to delete recipe", zap.String("id", rid), User(identifier), zap.Error(err))
 		return
 	}
-	logger.Debug("Deleted recipe", zap.String("id", rid), User(identifier))
+	logger.Info("Deleted recipe", zap.String("id", rid), User(identifier))
 	ctx.RedirectTo(w, r, "/")
 }
 
