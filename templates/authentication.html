@@ -1,22 +1,29 @@
 <head>
-    <title>Authentifizierung</title>
+    {{ template "head.html" (dict "Title" "Authentifizierung" "BaseUrl" .BaseUrl) }}
 </head>
 <body>
-    <h2>Nutzer</h2>
-    <p>
-        {{- if .CookieSet -}}
-            {{- if .User -}}
-                {{- .User -}}
-            {{- else -}}
-                Unbekannter Nutzer
-            {{- end -}}
-        {{- else -}}
-            Cookie nicht gesetzt
-        {{- end -}}
-    </p>
-    <h2>Cookie setzen</h2>
-    <form action="{{ .BaseUrl }}/authentication/set" method="post">
-        <input name="cookie-input" type="text" value="{{ .Token }}"/>
-        <input name="submit" type="submit" value="Setzen"/>
-    </form>
+    {{ template "navbar.html" (dict "Type" "" "BaseUrl" .BaseUrl) }}
+    <div class="recipe-container mx-auto content editable spacing-between">
+        <div>
+            <h2>Nutzer</h2>
+            <p>
+                {{- if .CookieSet -}}
+                    {{- if .User -}}
+                        {{- .User -}}
+                    {{- else -}}
+                        Unbekannter Nutzer
+                    {{- end -}}
+                {{- else -}}
+                    Cookie nicht gesetzt
+                {{- end -}}
+            </p>
+        </div>
+        <div class="spacing-between-small">
+            <h2>Cookie setzen</h2>
+            <form action="{{ .BaseUrl }}/authentication/set" method="post" class="spacing-between-small">
+                <input name="cookie-input" type="text" value="{{ .Token }}"/>
+                <input name="submit" type="submit" class="button" value="Setzen"/>
+            </form>
+        </div>
+    </div>
 </body>
