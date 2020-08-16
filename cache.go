@@ -170,4 +170,6 @@ func (c *RenderCache) AddRecipe(rid string) {
 
 func (c *RenderCache) InvalidateAll() {
 	c.recipes.InvalidateAll()
+	c.home.Invalidate()
+	c.create.Invalidate()
 }
