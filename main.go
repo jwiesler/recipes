@@ -138,11 +138,13 @@ func (ctx *RecipesContext) StartWatchTemplates(folder string, pattern string) er
 
 func Init(params *RecipesParams) (*RecipesContext, error) {
 	templates := PageTemplates{}
+	log.Print("Loading templates from ", strconv.Quote(params.templatesDirPath))
 	err := templates.Load(params.templatesDirPath, params.templatesPattern)
 	if err != nil {
 		return nil, err
 	}
 
+	log.Print("Loading recipes from ", strconv.Quote(params.recipesDirPath))
 	err = os.MkdirAll(params.recipesDirPath, os.ModePerm)
 	if err != nil {
 		return nil, err
@@ -156,9 +158,12 @@ func Init(params *RecipesParams) (*RecipesContext, error) {
 	for _, r := range recipesList {
 		recipes[r.Id] = r.Recipe
 	}
+	log.Print("Found ", len(recipes), " recipes")
 
+	log.Print("Reading tokens file ", strconv.Quote(params.tokensPath))
 	tokens := NewTokenManager("token")
 	if _, err := os.Stat(params.tokensPath); os.IsNotExist(err) {
+		log.Print("Tokens file not found, creating new")
 		b, err := json.Marshal(make(map[Identifier]Token))
 		if err != nil {
 			return nil, err
@@ -171,6 +176,7 @@ func Init(params *RecipesParams) (*RecipesContext, error) {
 	if err != nil {
 		return nil, err
 	}
+	log.Print("Found ", len(tokens.tokens), " tokens")
 
 	watcher, err := NewFileWatcher(1 * time.Second)
 	if err != nil {
@@ -182,6 +188,7 @@ func Init(params *RecipesParams) (*RecipesContext, error) {
 		recipes: recipes,
 	}
 
+	log.Print("Using base url ", strconv.Quote(params.baseUrl))
 	renderer := &PageRenderer{
 		BaseUrl:   params.baseUrl,
 		Templates: &templates,
