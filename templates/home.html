@@ -3,17 +3,14 @@
     {{ template "head.html" . }}
 </head>
 <body>
-    {{ template "navbar.html" . }}
-    <div class="content">
-        <div class="center recipe-container spacing-between">
-            <h2>Rezepte</h2>
-            <ul class="recipes-list">
-                {{ $b := .BaseUrl }}
-                {{ range $k, $v := .Recipes }}
-                    <li><a href="{{ $b }}/recipe/{{ $k }}">{{ $v.Name }}</a></li>
-                {{ end }}
-            </ul>
-
-        </div>
+    {{ template "navbar.html" (dict "Type" "" "BaseUrl" .BaseUrl) }}
+    <div class="content mx-auto recipe-container spacing-between">
+        <h2>Rezepte</h2>
+        <ul class="recipes-list">
+            {{ $b := .BaseUrl }}
+            {{ range $k, $v := .Recipes }}
+                <li><a href="{{ $b }}/recipe/{{ $k }}">{{ $v.Name }}</a></li>
+            {{ end }}
+        </ul>
     </div>
 </body>

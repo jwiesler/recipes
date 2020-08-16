@@ -3,58 +3,48 @@
     {{ template "head.html" . }}
 </head>
 <body>
-    {{ template "navbar.html" . }}
-    <div class="content">
-        <div class="container">
-            <div class="center recipe-container">
-                <div class="spacing-between-large">
-                    <div class="spacing-between-small">
-                        <h2>{{ .Recipe.Name }}</h2>
-                        {{- if .Recipe.Description -}}
-                            <p>{{ .Recipe.Description }}</p>
-                        {{- end -}}
-                        {{- if .Recipe.ImagePath -}}
-                            <div><img class="parent-sized" src="{{ .Recipe.ImagePath }}"/></div>
-                        {{- end -}}
-                    </div>
-                    <div class="spacing-between">
-                        <h4>Zutaten</h4>
-                        {{- range .Recipe.IngredientsSections -}}
-                            <div class="ingredients-section">
-                                {{- if .Heading -}}
-                                    <h6>{{ .Heading }}</h6>
-                                {{- end -}}
-                                <div class="ingredients-table">
-                                    {{- range .Ingredients -}}
-                                        <div class="ingredients-row-wrapper">
-                                            <div class="ingredient-amount"><span>{{- .Amount -}}</span><span>
-                                                    {{- if .Unit -}}
-                                                        {{- .Unit -}}
-                                                    {{- end -}}
-                                                </span></div>
-                                            <div class="ingredient-name">
-                                                {{- .Name -}}
-                                            </div>
-                                        </div>
-                                    {{- end -}}
-                                </div>
-                            </div>
-                        {{- end -}}
-                    </div>
-                    {{- if .Recipe.Instructions -}}
-                        <div class="spacing-between-small">
-                            <h4>Zubereitung</h4>
-                            {{ .Recipe.Instructions }}
-                        </div>
-                    {{- end -}}
-                    {{- if .Recipe.Source -}}
-                        <div class="spacing-between-small">
-                            <h4>Quelle</h4>
-                            {{ .Recipe.Source }}
-                        </div>
-                    {{- end -}}
-                </div>
+    {{ template "navbar.html" (dict "Type" "recipe" "BaseUrl" .BaseUrl "Id" .Id) }}
+    <div class="content mx-auto recipe-container">
+        <div class="spacing-between-large">
+            <div class="spacing-between-small">
+                <h2>{{ .Recipe.Name }}</h2>
+                {{- if .Recipe.Description -}}
+                    <p>{{ .Recipe.Description }}</p>
+                {{- end -}}
+                {{- if .Recipe.ImagePath -}}
+                    <div><img class="parent-sized" src="{{ .Recipe.ImagePath }}"/></div>
+                {{- end -}}
             </div>
+            <div class="spacing-between">
+                <h4>Zutaten</h4>
+                {{- range .Recipe.IngredientsSections -}}
+                    <div class="ingredients-section">
+                        {{- if .Heading -}}
+                            <h6 class="mb-0">{{ .Heading }}</h6>
+                        {{- end -}}
+                        <div class="ingredients-table">
+                            {{- range .Ingredients -}}
+                                <div class="ingredients-row-wrapper"><span class="ingredient-amount"><span>{{- .Amount -}}</span>{{ if unitNeedsSpace .Unit }} {{ end }}<span>
+                                            {{- if .Unit }}{{ .Unit }}{{ end -}}</span></span><span class="ingredient-name">
+                                        {{- .Name -}}
+                                    </span></div>
+                            {{- end -}}
+                        </div>
+                    </div>
+                {{- end -}}
+            </div>
+            {{- if .Recipe.Instructions -}}
+                <div class="spacing-between-small">
+                    <h4>Zubereitung</h4>
+                    {{ .Recipe.Instructions }}
+                </div>
+            {{- end -}}
+            {{- if .Recipe.Source -}}
+                <div class="spacing-between-small">
+                    <h4>Quelle</h4>
+                    {{ .Recipe.Source }}
+                </div>
+            {{- end -}}
         </div>
     </div>
 </body>

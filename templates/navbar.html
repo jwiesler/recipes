@@ -1,19 +1,43 @@
-<nav class="navbar navbar-expand-sm navbar-dark bg-dark">
-    <div class="nav-container center d-flex justify-content-between">
-    <a class="navbar-brand" href="{{ .BaseUrl }}/">Rezepte</a>
-    <div class="d-flex">
-        <ul class="navbar-nav mx-1">
-            {{- if .Id -}}
-            <li class="nav-item">
-                <a class="nav-link fa fa-pencil" href="{{ .BaseUrl }}/edit/{{ .Id }}"></a>
-            </li>
-            {{- end -}}
-            <li class="nav-item">
-                <a class="nav-link fa fa-plus" href="{{ .BaseUrl }}/create"></a>
-            </li>
-        </ul>
-
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
-    </div>
+<nav class="navbar sticky-top navbar-expand-sm navbar-dark bg-dark justify-content-center">
+    <div class="nav-container d-flex flex-grow-1 justify-content-between">
+        <a class="navbar-brand" href="{{ .BaseUrl }}/">Rezepte</a>
+        <div class="d-flex">
+            <ul class="navbar-nav">
+                {{- if eq .Type "edit" -}}
+                    {{- if .Id -}}
+                    <li class="nav-item">
+                        <button id="delete-recipe-modal-button" class="nav-button fa fa-trash" data-toggle="modal" data-target="#confirm-delete-modal"></button>
+                    </li>
+                    {{- end -}}
+                    <li class="nav-item">
+                        <button id="submit-recipe-button" class="nav-button fa fa-floppy-o" data-method="post" data-action="
+                        {{- if .Id -}}
+                            {{ .BaseUrl }}/edit/{{ .Id }}
+                        {{- else -}}
+                            {{ .BaseUrl }}/create
+                        {{- end -}}
+                        "></button>
+                    </li>
+                    {{- if .Id -}}
+                        <li class="nav-item">
+                            <a class="nav-link fa fa-times" href="{{ .BaseUrl }}/recipe/{{ .Id }}"></a>
+                        </li>
+                    {{- else -}}
+                        <li class="nav-item">
+                            <a class="nav-link fa fa-times" href="{{ .BaseUrl }}/"></a>
+                        </li>
+                    {{- end -}}
+                {{- else -}}
+                    {{- if eq .Type "recipe" -}}
+                        <li class="nav-item">
+                            <a class="nav-link fa fa-pencil" href="{{ .BaseUrl }}/edit/{{ .Id }}"></a>
+                        </li>
+                    {{- end -}}
+                    <li class="nav-item">
+                        <a class="nav-link fa fa-plus" href="{{ .BaseUrl }}/create"></a>
+                    </li>
+                {{- end -}}
+            </ul>
+        </div>
     </div>
 </nav>

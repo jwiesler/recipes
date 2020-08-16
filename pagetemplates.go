@@ -46,9 +46,38 @@ func Sequence(values ...interface{}) ([]interface{}, error) {
 	return arr, nil
 }
 
+var siUnits = map[rune]struct{}{
+	'g': {},
+	'l': {},
+	'm': {},
+}
+
+var siUnitPrefixes = map[rune]struct{}{
+	'k': {},
+	'd': {},
+	'c': {},
+	'm': {},
+	'µ': {},
+}
+
+func UnitNeedsSpace(str string) bool {
+	runes := []rune(str)
+	i := 0
+	if len(runes) == 0 {
+		return false
+	}
+	_, isSIUnitPrefix := siUnitPrefixes[runes[0]]
+	if isSIUnitPrefix {
+		i++
+	}
+	_, isSIUnit := siUnits[runes[i]]
+	return !isSIUnit
+}
+
 var funcMap = template.FuncMap{
 	"dict": Dictionary,
 	"seq":  Sequence,
+	"unitNeedsSpace": UnitNeedsSpace,
 }
 
 var minifier = func() *minify.M {
@@ -58,6 +87,7 @@ var minifier = func() *minify.M {
 		KeepDocumentTags: true,
 		KeepEndTags:      true,
 		KeepQuotes:       true,
+		//KeepWhitespace:   true,
 	})
 	m.AddFunc("image/svg+xml", svg.Minify)
 	return m

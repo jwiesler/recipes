@@ -23,7 +23,10 @@ h1, h2, h3, h4, h5, h6 {
 
 .nav-container, .toast-container, .recipe-container {
 	max-width: 500px;
-	width: 500px;
+}
+
+.nav-container {
+	padding-left: 0.5rem;
 }
 
 .recipe-container {
@@ -95,14 +98,6 @@ textarea#instructions {
 	min-height: 20em;
 }
 
-.ingredients-section .toolbar-right a {
-	font-size: 1.2rem;
-}
-
-.ingredients-section .toolbar-right-3, .ingredients-section .button-add {
-	visibility: hidden;
-}
-
 .ingredients-row-wrapper {
 	display: flex;
 }
@@ -123,8 +118,40 @@ textarea#instructions {
 	width: 100%;
 }
 
-.ingredient-tools {
-	flex: 1 0 auto;
+.nav-button, .tool-button {
+	background: none;
+	border: none;
+	color: inherit;
+}
+
+.tool-button {
+	cursor: pointer;
+	padding: 0.25em;
+	vertical-align: middle;
+	text-align: center;
+}
+
+.nav-button:focus, .tool-button:focus {
+	outline: none;
+}
+
+.tool-button.fa {
+	width: 1.5em;
+	height: 1.5em;
+}
+
+.tool-button:hover {
+	text-decoration: none;
+	background-color: #343434;
+}
+
+.tool-button:disabled {
+	opacity: 0.65;
+}
+
+.toolbar {
+	display: flex;
+	align-items: center;
 }
 
 .toolbar-wrapper {
@@ -132,11 +159,11 @@ textarea#instructions {
 	flex-direction: row;
 }
 
-.toolbar-left-3, .toolbar-right-3 {
+.toolbar-3 {
 	flex: 1 0 5.5em;
 }
 
-.toolbar-left-1, .toolbar-right-1 {
+.toolbar-1 {
 	flex: 1 0 1.5em;
 }
 
@@ -144,45 +171,24 @@ textarea#instructions {
 	flex-grow: 2;
 }
 
-.toolbar-center input.editable, .submit-button {
+.toolbar-left {
+	justify-content: flex-start;
+}
+
+.toolbar-right {
+	justify-content: flex-end;
+}
+
+.toolbar-wrapper>.toolbar-left {
+	margin-left: 0.5em;
+}
+
+.toolbar-wrapper>.toolbar-right {
+	margin-right: 0.5em;
+}
+
+.toolbar-center input.editable, .submit-button, .delete-recipe-button {
 	width: 100%;
-}
-
-.toolbar-right>div {
-	float: right;
-}
-
-.toolbar-left>div {
-	float: left;
-}
-
-.button {
-	cursor: pointer;
-	padding: 0.25em;
-	vertical-align: middle;
-	text-align: center;
-}
-
-.button.fa {
-	width: 1.5em;
-	height: 1.5em;
-}
-
-.button:hover {
-	text-decoration: none;
-	background-color: #343434;
-}
-
-.button:disabled {
-	opacity: 0.65;
-}
-
-.submit-button {
-	background-color: inherit;
-	color: inherit;
-	border: 1px solid #343434;
-	padding: 0.5em;
-	border-radius: 0.5em;
 }
 
 .button-add-section {
@@ -210,12 +216,41 @@ textarea#instructions {
 	max-width: unset;
 }
 
-.nav-link.fa {
+.navbar-nav {
+	flex-direction: row;
+}
+
+.nav-button {
+	color: rgba(255,255,255,.5);
+	padding: 0.5rem 0.5rem;
+}
+
+.nav-button.fa, .nav-link.fa {
 	font-size: 1.5rem;
 	width: 2.5rem;
 	text-align: center;
 }
 
-.navbar-nav {
-	flex-direction: row;
+.nav-button:hover {
+	color: rgba(255, 255, 255, 0.75);
+}
+
+.nav-button:disabled {
+	opacity: 0.5;
+}
+
+#delete-recipe-modal-button {
+	color: rgba(255, 140, 140, 0.5);
+}
+
+#delete-recipe-modal-button:hover {
+	color: rgba(255, 140, 140, 0.75);
+}
+
+.modal-header, .modal-footer {
+	border-color: #343434;
+}
+
+.modal-content {
+	background-color: #222;
 }

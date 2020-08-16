@@ -50,52 +50,197 @@ function initToolbar(node, toolbar) {
     })
 }
 
+function extendRow(row) {
+    const jrow = $(row)
+    row.ingredient = {
+        nameInput: jrow.find(".ingredient-name-input")[0],
+        unitInput: jrow.find(".ingredient-unit-input")[0],
+        amountInput: jrow.find(".ingredient-amount-input")[0],
+    }
+}
+
 function initListersForRow(row) {
     const jrow = $(row)
     initToolbar(row, jrow)
 }
 
-function initListenersForSection(section, defaultRow) {
+let defaultRow;
+let defaultSection;
+
+function addRowToTable(table) {
+    const e = defaultRow.cloneNode(true)
+    table.appendChild(e)
+    extendRow(e)
+    initListersForRow(e)
+    return e
+}
+
+function extendSection(section) {
+    section.ingredientsTable = $(section).children(".ingredients-table").first()[0]
+    section.ingredients = function() {
+        return this.ingredientsTable.childNodes
+    }
+    section.headingInput = $(section).find(".ingredients-section-name-input")[0]
+}
+
+function initSection(section, defaultRow, importInformation) {
     const jsection = $(section)
+    extendSection(section)
     const toolbar = jsection.find(".toolbar-wrapper")
     console.assert(toolbar.length !== 0)
     initToolbar(section, toolbar)
+    toolbar.find(".button-import")[0].addEventListener("click", function() {
+        importInformation.targetSection = section
+        importInformation.reset()
+        importInformation.modal.modal("show")
+    })
+
     getIngredientsOfSection(jsection).each(function(i, row) {
+        extendRow(row)
         initListersForRow(row)
     })
     const addButton = jsection.find(".button-add").first()
     const table = getIngredientsTable(jsection)[0]
     addButton.click(function() {
-        const e = defaultRow.cloneNode(true)
-        table.appendChild(e)
-        initListersForRow(e)
+        addRowToTable(table)
+    })
+}
+
+function doRedirect(xhr) {
+    console.assert(xhr.responseURL)
+    if(xhr.responseURL)
+        window.location.href = xhr.responseURL
+}
+
+function XHRResultHandler(xhr, success, failure) {
+    return function() {
+        if(xhr.readyState !== 4)
+            return
+        if(xhr.status !== 200) {
+            failure(xhr)
+        } else {
+            success(xhr)
+        }
+    }
+}
+
+function createRequestForButton(b, async) {
+    const xhr = new XMLHttpRequest()
+    const method = b.getAttribute("data-method")
+    const action = b.getAttribute("data-action")
+    console.assert(method)
+    console.assert(action)
+    xhr.open(method, action, async)
+    return xhr
+}
+
+function parseIngredients(text) {
+    const lines = text.split("\n")
+    const ingredients = new Array(lines.length)
+    let off = 0
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i]
+        const arr = line.split(/\s+/, 3)
+        if(arr.length === 0)
+            continue;
+
+        let ingredient;
+        if(arr.length === 1) {
+            ingredient = {
+                amount: "",
+                unit: "",
+                name: arr[0],
+            }
+        } else if(arr.length === 2) {
+            ingredient = {
+                amount: arr[0],
+                unit: "",
+                name: arr[1],
+            }
+        } else {
+            ingredient = {
+                amount: arr[0],
+                unit: arr[1],
+                name: arr[2],
+            }
+        }
+        ingredients[off++] = ingredient
+    }
+    return ingredients.slice(0, off)
+}
+
+function initIngredientsImport(importInformation) {
+    importInformation.importButton.addEventListener("click", function() {
+        const text = importInformation.textArea.value
+        const ingredients = parseIngredients(text)
+
+        const targetSection = importInformation.targetSection
+        const table = targetSection.ingredientsTable
+        for (let i = 0; i < ingredients.length; i++) {
+            const ingredient = ingredients[i]
+            const row = addRowToTable(table)
+            row.ingredient.nameInput.value = ingredient.name
+            row.ingredient.unitInput.value = ingredient.unit
+            row.ingredient.amountInput.value = ingredient.amount
+        }
+
+        importInformation.modal.modal("hide")
     })
 }
 
 $(function() {
     const form = $("#recipe-edit-form")[0]
     console.assert(form)
-    form.reset()
     const info = createInitialState($(form))
-    const defaultRow = $("#default-row")[0].firstChild
-    const defaultSection = $("#default-section")[0].firstChild
-    console.assert(defaultRow)
-    console.assert(defaultSection)
+    defaultRow = $("#default-row")[0].firstChild
+    defaultSection = $("#default-section")[0].firstChild
+    console.assert(defaultRow && defaultSection)
+
+    const importInformation = {
+        importButton: $("#import-ingredients-text-button")[0],
+        textArea: $("#import-ingredients-text-area")[0],
+        modal: $("#import-ingredients-text-modal"),
+        targetSection: null,
+        reset: function() {
+            this.textArea.value = ""
+        }
+    }
+    console.assert(importInformation.importButton && importInformation.textArea && importInformation.modal)
 
     info.findSections().each(function(i, section) {
-        initListenersForSection(section, defaultRow)
+        initSection(section, defaultRow, importInformation)
     })
+
+    initIngredientsImport(importInformation)
 
     const addButton = $(form).find(".button-add-section")
     addButton.click(function() {
         const e = defaultSection.cloneNode(true)
         info.ingredients[0].appendChild(e)
-        initListenersForSection(e, defaultRow)
+        initSection(e, defaultRow, importInformation)
     })
 
-    const submitToast = $("#toast-submit-failed")
-    const submitToastContent = submitToast.find(".toast-body")[0]
-    const submitButton = $(form).find(".submit-button")[0]
+    const errorToast = $("#toast-submit-failed")
+    const errorToastContent = errorToast.find(".toast-body")[0]
+    const submitButton = $("#submit-recipe-button")[0]
+    const deleteButton = $("#delete-recipe-button")[0]
+    console.assert(submitButton)
+
+    function setButtons(enabled) {
+        submitButton.enabled = enabled
+        if(deleteButton)
+            deleteButton.enabled = false
+    }
+
+    function serverError(xhr) {
+        const text = xhr.responseText
+        errorToastContent.innerText = "Antwort des Servers: " + text
+        errorToast.toast("dispose")
+        errorToast.toast("show")
+        console.error("Failed with status code " + xhr.status + " (" + xhr.statusText + "): " + text)
+        setButtons(true)
+    }
+
     function saveRecipe() {
         const title = info.titleInput.value
         const description = info.descriptionInput.value
@@ -105,20 +250,19 @@ $(function() {
         const resArray = new Array(sections.length)
         const image = $("#image").attr("src")
         for (let i = 0; i < sections.length; i++) {
+            const section = sections[i]
             const sec = $(sections[i])
-            const heading = sec.find(".ingredients-section-name-input")[0].value
+            const heading = section.headingInput.value
 
             const tableRows = getIngredientsOfSection(sec)
             const ingredientsArray = new Array(tableRows.length)
             for (let j = 0; j < tableRows.length; j++) {
-                const row = $(tableRows[j])
-                const ingredientAmount = row.find(".ingredient-amount-input")[0].value
-                const ingredientAmountUnit = row.find(".ingredient-unit-input")[0].value
-                const ingredientName = row.find(".ingredient-name-input")[0].value
+                const row = tableRows[j]
+
                 ingredientsArray[j] = {
-                    Amount: ingredientAmount,
-                    Unit: ingredientAmountUnit,
-                    Name: ingredientName,
+                    Amount: row.ingredient.amountInput.value,
+                    Unit: row.ingredient.unitInput.value,
+                    Name: row.ingredient.nameInput.value,
                 }
             }
             resArray[i] = {
@@ -136,30 +280,25 @@ $(function() {
             Source: source,
         }
         const json = JSON.stringify(res)
-        const xhr = new XMLHttpRequest()
-        xhr.open(form.method, form.action, true)
+        const xhr = createRequestForButton(submitButton, true)
         xhr.setRequestHeader("Content-Type", 'application/json; charset=UTF-8')
-        xhr.onreadystatechange = function(r) {
-            if(xhr.readyState !== 4)
-                return
-            if(xhr.status !== 200) {
-                submitToastContent.innerText = "Antwort des Servers: " + xhr.responseText
-                submitToast.toast("dispose")
-                submitToast.toast("show")
-                console.error("Failed with status code " + xhr.status + " (" + xhr.statusText + "): " + xhr.responseText)
-                submitButton.disabled = false
-            } else if(xhr.responseURL) {
-                window.location.href = xhr.responseURL
-            }
-
-        }
+        xhr.onreadystatechange = XHRResultHandler(xhr, doRedirect, serverError)
         xhr.send(json)
     }
 
-    submitButton.addEventListener("click", function(e) {
-        submitButton.disabled = true
+    submitButton.addEventListener("click", function() {
+        setButtons(false)
         saveRecipe()
     })
+
+    if(deleteButton) {
+        deleteButton.addEventListener("click", function () {
+            setButtons(false)
+            const xhr = createRequestForButton(deleteButton, true)
+            xhr.onreadystatechange = XHRResultHandler(xhr, doRedirect, serverError)
+            xhr.send()
+        })
+    }
     form.addEventListener("submit", function(e) {
         e.preventDefault()
     })

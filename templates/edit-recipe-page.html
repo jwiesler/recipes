@@ -1,22 +1,27 @@
 {{- define "ingredient-row" -}}
     <div class="ingredients-row-wrapper hover-show-display-base">
-        <div class="ingredient-amount vspace-between-small">
+        <div class="ingredient-amount vspace-between-small-r">
+            <div class="toolbar toolbar-left toolbar-1 hover-show-display vspace-between-small"><button tabindex="-1" class="tool-button button-delete fa fa-times"></button></div>
             <input class="ingredient-amount-input editable" placeholder="Menge" value="{{ .Amount }}" /><input class="ingredient-unit-input editable" value="{{ .Unit }}" placeholder="Einheit" />
         </div>
         <div class="ingredient-name vspace-between-small">
             <input class="ingredient-name-input editable" placeholder="Zutat" value="{{ .Name }}" />
-            <div class="ingredient-tools hover-show-display vspace-between-small"><a class="button button-up fa fa-arrow-up"></a><a class="button button-down fa fa-arrow-down"></a><a class="button button-delete fa fa-times"></a></div>
+            <div class="toolbar toolbar-right toolbar-1 toolbar hover-show-display vspace-between-small"><button tabindex="-1" class="tool-button button-up fa fa-arrow-up"></button><button tabindex="-1" class="tool-button button-down fa fa-arrow-down"></button></div>
         </div>
     </div>
 {{- end -}}
 
 {{- define "ingredients-section" -}}
     <div class="ingredients-section hover-show-visible-base">
-        <div class="toolbar-wrapper vspace-between-small">
-            <div class="toolbar-left-3"></div>
-            <div class="toolbar-center"><h6><input class="ingredients-section-name-input editable" value="{{ .Heading }}" placeholder="Überschrift" /></h6></div>
-            <div class="toolbar-right-3 hover-show-visible">
-                <div class="vspace-between-small"><a class="button button-up fa fa-arrow-up"></a><a class="button button-down fa fa-arrow-down"></a><a class="button button-delete fa fa-times"></a></div>
+        <div class="toolbar-wrapper">
+            <div class="toolbar toolbar-left toolbar-3 hover-show-visible vspace-between-small">
+                <button tabindex="-1" class="tool-button button-delete fa fa-times"></button>
+            </div>
+            <div class="toolbar-center"><h6 class="mb-0"><input class="ingredients-section-name-input editable" value="{{ .Heading }}" placeholder="Überschrift" /></h6></div>
+            <div class="toolbar toolbar-right toolbar-3 hover-show-visible vspace-between-small">
+                <button tabindex="-1" class="tool-button button-import fa fa-download" data-toggle="modal" data-target="#import-ingredients-text-modal"></button>
+                <button tabindex="-1" class="tool-button button-up fa fa-arrow-up"></button>
+                <button tabindex="-1" class="tool-button button-down fa fa-arrow-down"></button>
             </div>
         </div>
         <div class="ingredients-table">
@@ -24,7 +29,7 @@
                 {{- template "ingredient-row" (dict "Amount" .Amount "Unit" .Unit "Name" .Name ) -}}
             {{- end -}}
         </div>
-        <div><a class="button button-add fa fa-plus hover-show-visible"></a></div>
+        <div><button tabindex="-1" class="tool-button button-add fa fa-plus hover-show-visible"></button></div>
     </div>
 {{- end -}}
 
@@ -34,16 +39,10 @@
     <script src="{{ .BaseUrl }}/static/js/edit.js"></script>
 </head>
 <body>
-    {{ template "navbar.html" . }}
+    {{ template "navbar.html" (dict "Type" "edit" "BaseUrl" .BaseUrl "Id" .Id) }}
     <div class="content">
-        <div class="center recipe-container editable">
-            <form id="recipe-edit-form" method="post" action="{{ .BaseUrl }}
-            {{- if .Recipe -}}
-                /edit/{{ .Id }}
-            {{- else -}}
-                /create
-            {{- end -}}
-            ">
+        <div class="recipe-container mx-auto editable">
+            <div id="recipe-edit-form">
                 <div class="spacing-between-large">
                     <div class="spacing-between-small">
                         <h2><input id="name" class="editable" placeholder="Name" autocomplete="off" {{- with .Recipe }} value="{{ .Name }}"{{- end -}} /></h2>
@@ -66,7 +65,7 @@
                             {{- end -}}
                         {{- end -}}
                         </div>
-                        <div><a class="button button-add-section fa fa-plus"></a></div>
+                        <div><button tabindex="-1" class="tool-button button-add-section fa fa-plus"></button></div>
                     </div>
 
                     <div class="spacing-between-small">
@@ -78,12 +77,8 @@
                         <h4>Quelle</h4>
                         <textarea id="source" class="editable" autocomplete="off" placeholder="Quelle" >{{- with .Recipe -}}{{ .Source }}{{- end -}}</textarea>
                     </div>
-
-                    <div>
-                        <button class="button submit-button" >Speichern</button>
-                    </div>
                 </div>
-            </form>
+            </div>
 
             <div class="center toast-container fixed-bottom">
                 <div id="toast-submit-failed" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true" data-delay="5000">
@@ -96,6 +91,42 @@
                     <div class="toast-body"></div>
                 </div>
             </div>
+
+            <div class="modal fade" id="import-ingredients-text-modal" tabindex="-1" role="dialog" aria-labelledby="importIngredientsTextModal" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header justify-content-center">
+                            <h5 class="modal-title" id="exampleModalLabel">Zutaten importieren</h5>
+                        </div>
+                        <div class="modal-body">
+                            <textarea id="import-ingredients-text-area" rows="4" placeholder="[Anzahl] [Einheit] [Zutat]"></textarea>
+                        </div>
+                        <div class="modal-footer justify-content-center">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Abbrechen</button>
+                            <button id="import-ingredients-text-button" type="button" class="btn btn-primary">Importieren</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{ if .Id }}
+                <div class="modal fade" id="confirm-delete-modal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModal" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header justify-content-center">
+                                <h5 class="modal-title" id="exampleModalLabel">Sicher?</h5>
+                            </div>
+                            <div class="modal-body">
+                                Dieses Rezept wirklich löschen?
+                            </div>
+                            <div class="modal-footer justify-content-center">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Abbrechen</button>
+                                <button id="delete-recipe-button" type="button" class="btn btn-danger" data-method="post" data-action="{{ .BaseUrl }}/delete/{{ .Id }}">Löschen</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {{ end }}
         </div>
         <div id="defaults">
             <div id="default-row">
