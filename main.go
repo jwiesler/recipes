@@ -162,7 +162,7 @@ func Init(params *RecipesParams) (*RecipesContext, error) {
 		if err != nil {
 			return nil, err
 		}
-		if err = ioutil.WriteFile(params.tokensPath, b, 0); err != nil {
+		if err = ioutil.WriteFile(params.tokensPath, b, 0666); err != nil {
 			return nil, err
 		}
 	}

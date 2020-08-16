@@ -53,7 +53,7 @@ func (r *RawRecipe) WriteToFile(file string) error {
 		return e
 	}
 
-	return ioutil.WriteFile(file, b, 0)
+	return ioutil.WriteFile(file, b, 0666)
 }
 
 var policy = bluemonday.UGCPolicy()
