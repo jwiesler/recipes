@@ -20,14 +20,14 @@ func (c *Recipes) addRecipe(rid string, recipe *RawRecipe) (alreadyContained boo
 	return false, nil
 }
 
-func (c *Recipes) removeRecipe(rid string) error {
-	err := c.Database.Remove(rid)
-	if err != nil {
-		return err
+func (c *Recipes) removeRecipe(rid string) (bool, error) {
+	exists, err := c.Database.Remove(rid)
+	if !exists || err != nil {
+		return exists, err
 	}
 	c.Cache.RemoveRecipe(rid)
 	c.Cache.InvalidateHome()
-	return nil
+	return true, nil
 }
 
 func (c *Recipes) AddRecipe(rid string, recipe *RawRecipe) (bool, error) {
@@ -44,7 +44,8 @@ func (c *Recipes) ReplaceRecipe(rid, oldRId string, recipe *RawRecipe) (alreadyC
 		if alreadyContained || err != nil {
 			return alreadyContained, err
 		}
-		return false, c.removeRecipe(oldRId)
+		_, err = c.removeRecipe(oldRId)
+		return false, err
 	} else {
 		c.lock.RLock()
 		defer c.lock.RUnlock()
@@ -57,7 +58,7 @@ func (c *Recipes) ReplaceRecipe(rid, oldRId string, recipe *RawRecipe) (alreadyC
 	}
 }
 
-func (c *Recipes) RemoveRecipe(rid string) error {
+func (c *Recipes) RemoveRecipe(rid string) (bool, error) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	return c.removeRecipe(rid)

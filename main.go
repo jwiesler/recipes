@@ -81,6 +81,7 @@ func ReadRecipeFromResponse(body io.Reader) (*RawRecipe, error) {
 	if err != nil {
 		return nil, err
 	}
+	recipeRead.Clean()
 	return &recipeRead, nil
 }
 
@@ -354,8 +355,12 @@ func ReadRecipeRequestResponse(w http.ResponseWriter, r *http.Request) (recipe *
 	return recipe, rid, true
 }
 
+func (ctx *RecipesContext) RedirectTo(w http.ResponseWriter, r *http.Request, add string) {
+ 	http.Redirect(w, r, ctx.BaseUrl+add, http.StatusSeeOther)
+}
+
 func (ctx *RecipesContext) RedirectToRecipe(w http.ResponseWriter, r *http.Request, rid string) {
-	http.Redirect(w, r, ctx.BaseUrl+"/recipe/"+rid, http.StatusSeeOther)
+	ctx.RedirectTo(w, r, "/recipe/"+rid)
 }
 
 func ErrorPlaylistAlreadyExists(w http.ResponseWriter, rid string) {
@@ -402,7 +407,7 @@ func (ctx *RecipesContext) HandleEdit(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ctx *RecipesContext) HandleEditResponse(w http.ResponseWriter, r *http.Request) {
-	id, _ := AuthenticatedTokenIdentifier(r)
+	identifier, _ := AuthenticatedTokenIdentifier(r)
 	vars := mux.Vars(r)
 	oldRid := vars["recipe"]
 
@@ -422,26 +427,86 @@ func (ctx *RecipesContext) HandleEditResponse(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	log.Print("Updated recipe ", strconv.Quote(rid), " (", id, ")")
+	log.Print("Updated recipe ", strconv.Quote(rid), " (", identifier, ")")
 	ctx.RedirectToRecipe(w, r, rid)
 }
 
-type IsNotOk struct{}
+func (ctx *RecipesContext) HandleDeleteResponse(w http.ResponseWriter, r *http.Request) {
+	identifier, _ := AuthenticatedTokenIdentifier(r)
+	vars := mux.Vars(r)
+	rid := vars["recipe"]
 
-func (*IsNotOk) Contains(r rune) bool {
-	return r < 32 || r >= 127 || !(unicode.IsLetter(r) || unicode.IsNumber(r) || unicode.IsSpace(r))
+	exists, err := ctx.Recipes.RemoveRecipe(rid)
+	if !exists {
+		http.NotFound(w, r)
+		return
+	}
+	if err != nil {
+		http.Error(w, "Failed to replace recipe", 400)
+		return
+	}
+	log.Print("Deleted recipe ", strconv.Quote(rid), " (", identifier, ")")
+	ctx.RedirectTo(w, r, "/")
 }
 
-var transformer = transform.Chain(norm.NFKD, runes.Remove(&IsNotOk{}), runes.Map(func(r rune) rune {
-	if unicode.IsSpace(r) {
-		return '-'
+func IsNotOk(r rune) bool {
+	return r < 32 || r >= 127 || !(unicode.IsLetter(r) || unicode.IsNumber(r) || unicode.IsSpace(r) || r == '-')
+}
+
+var transformer = transform.Chain(norm.NFKD, runes.Remove(runes.Predicate(IsNotOk)))
+
+type ReplaceFunction func(rune) []rune
+
+func ReplaceWithMany(s string, replace ReplaceFunction) string {
+	builder := strings.Builder{}
+	builder.Grow(len(s))
+	for _, r := range s {
+		for _, rep := range replace(r) {
+			builder.WriteRune(rep)
+		}
 	}
-	return unicode.ToLower(r)
-}))
+	return builder.String()
+}
+
+func ReplaceGermanUmlauts(r rune) []rune {
+	lower := unicode.ToLower(r)
+	switch lower {
+	case 'ä':
+		return []rune{'a', 'e'}
+	case 'ö':
+		return []rune{'o', 'e'}
+	case 'ü':
+		return []rune{'u', 'e'}
+	case 'ß':
+		return []rune{'s', 's'}
+	default:
+		return []rune{ lower }
+	}
+}
+
+func ReplaceSpaceAndCollapse(s string, replacement rune) string {
+	builder := strings.Builder{}
+	builder.Grow(len(s))
+	lastSpace := false
+	for _, r := range s {
+		if unicode.IsSpace(r) || r == replacement {
+			if !lastSpace {
+				builder.WriteRune(replacement)
+			}
+			lastSpace = true
+		} else {
+			builder.WriteRune(r)
+			lastSpace = false
+		}
+	}
+	return builder.String()
+}
 
 func TransformToIdString(s string) string {
-	str, _, _ := transform.String(transformer, s)
-	return str
+	rep := ReplaceWithMany(s, ReplaceGermanUmlauts)
+	str, _, _ := transform.String(transformer, rep)
+	withoutSpaces := ReplaceSpaceAndCollapse(str, '-')
+	return withoutSpaces
 }
 
 func InitHandlers(r *mux.Router, ctx *RecipesContext) {
@@ -453,12 +518,15 @@ func InitHandlers(r *mux.Router, ctx *RecipesContext) {
 	r.HandleFunc("/", ctx.HandleHome).Schemes(scheme)
 	r.HandleFunc("/recipe/{recipe}", ctx.HandleShow).Methods("GET").Schemes(scheme)
 	r.HandleFunc("/create", ctx.HandleCreate).Methods("GET").Schemes(scheme)
-	r.Handle("/create", ctx.HandleAuthenticate(http.HandlerFunc(ctx.HandleCreateResponse))).Methods("POST").Schemes(scheme)
 	r.HandleFunc("/edit/{recipe}", ctx.HandleEdit).Methods("GET").Schemes(scheme)
-	r.Handle("/edit/{recipe}", ctx.HandleAuthenticate(http.HandlerFunc(ctx.HandleEditResponse))).Methods("POST").Schemes(scheme)
+
 	r.HandleFunc("/authentication", ctx.HandleAuthentication).Methods("GET").Schemes(scheme)
 	r.HandleFunc("/authentication/generate/{identifier}", ctx.HandleAuthenticationGenerate).Methods("GET").Schemes(scheme)
 	r.HandleFunc("/authentication/set/{token}", ctx.HandleAuthenticationSet).Methods("GET").Schemes(scheme)
+
+	r.Handle("/create", ctx.HandleAuthenticate(http.HandlerFunc(ctx.HandleCreateResponse))).Methods("POST").Schemes(scheme)
+	r.Handle("/delete/{recipe}", ctx.HandleAuthenticate(http.HandlerFunc(ctx.HandleDeleteResponse))).Methods("POST").Schemes(scheme)
+	r.Handle("/edit/{recipe}", ctx.HandleAuthenticate(http.HandlerFunc(ctx.HandleEditResponse))).Methods("POST").Schemes(scheme)
 
 	fs := http.FileServer(http.Dir("static/"))
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs)).Methods("GET").Schemes(scheme)

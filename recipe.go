@@ -6,6 +6,7 @@ import (
 	"github.com/microcosm-cc/bluemonday"
 	"html/template"
 	"io/ioutil"
+	"strings"
 )
 
 type Ingredient struct {
@@ -70,5 +71,18 @@ func (r *RawRecipe) BakeRecipe() *BakedRecipe {
 		IngredientsSections: r.IngredientsSections,
 		Instructions:        BakeString(r.Instructions),
 		Source:              BakeString(r.Source),
+	}
+}
+
+func (r *RawRecipe) Clean() {
+	r.Name = strings.TrimSpace(r.Name)
+	r.Description = strings.TrimSpace(r.Description)
+	for _, section := range r.IngredientsSections {
+		section.Heading = strings.TrimSpace(section.Heading)
+		for _, ingredient := range section.Ingredients {
+			ingredient.Name = strings.TrimSpace(ingredient.Name)
+			ingredient.Unit = strings.TrimSpace(ingredient.Unit)
+			ingredient.Amount = strings.TrimSpace(ingredient.Amount)
+		}
 	}
 }

@@ -24,12 +24,12 @@ func (m *RecipesDatabase) insertRecipe(id string, recipe *RawRecipe) error {
 	return m.writeRecipe(id, recipe)
 }
 
-func (m *RecipesDatabase) removeIfExists(id string) error {
+func (m *RecipesDatabase) removeIfExists(id string) (bool, error) {
 	if _, ok := m.recipes[id]; ok {
 		delete(m.recipes, id)
-		return os.Remove(m.makePath(id))
+		return true, os.Remove(m.makePath(id))
 	}
-	return nil
+	return false, nil
 }
 
 func (m *RecipesDatabase) Add(id string, recipe *RawRecipe) (alreadyContained bool, err error) {
@@ -56,7 +56,7 @@ func (m *RecipesDatabase) GetAll() map[string]*RawRecipe {
 	return m.recipes
 }
 
-func (m *RecipesDatabase) Remove(id string) error {
+func (m *RecipesDatabase) Remove(id string) (bool, error) {
 	return m.removeIfExists(id)
 }
 
