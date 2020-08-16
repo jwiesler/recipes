@@ -143,7 +143,7 @@ func Init(params *RecipesParams) (*RecipesContext, error) {
 		return nil, err
 	}
 
-	err = os.MkdirAll(params.recipesDirPath, os.ModeDir)
+	err = os.MkdirAll(params.recipesDirPath, os.ModePerm)
 	if err != nil {
 		return nil, err
 	}
