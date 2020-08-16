@@ -347,18 +347,22 @@ func (ctx *RecipesContext) HandleCreate(w http.ResponseWriter, _ *http.Request) 
 	WriteString(w, s)
 }
 
-func ReadRecipeRequestResponse(w http.ResponseWriter, r *http.Request) (recipe *RawRecipe, rid string, ok bool) {
+func User(identifier Identifier) zap.Field {
+	return zap.String("user", string(identifier))
+}
+
+func ReadRecipeRequestResponse(w http.ResponseWriter, r *http.Request, identifier Identifier) (recipe *RawRecipe, rid string, ok bool) {
 	recipe, err := ReadRecipeFromResponse(r.Body)
 	if err != nil {
 		http.Error(w, "Failed to read edit post request body", 400)
-		logger.Debug("Failed to read edit post request body", zap.Error(err))
+		logger.Debug("Failed to read edit post request body", zap.Error(err), User(identifier))
 		return nil, "", false
 	}
 
 	rid = TransformToIdString(strings.TrimSpace(recipe.Name))
 	if len(rid) == 0 {
 		http.Error(w, "Can't create a recipe with an empty id", 400)
-		logger.Debug("Can't create a recipe with an empty id")
+		logger.Debug("Can't create a recipe with an empty id", User(identifier))
 		return nil, "", false
 	}
 	return recipe, rid, true
@@ -374,12 +378,12 @@ func (ctx *RecipesContext) RedirectToRecipe(w http.ResponseWriter, r *http.Reque
 
 func ErrorPlaylistAlreadyExists(w http.ResponseWriter, rid string, identifier Identifier) {
 	http.Error(w, "A recipe with this id already exists", 400)
-	logger.Debug("A recipe with this id already exists", zap.String("id", rid), zap.String("user", string(identifier)))
+	logger.Debug("A recipe with this id already exists", zap.String("id", rid), User(identifier))
 }
 
 func (ctx *RecipesContext) HandleCreateResponse(w http.ResponseWriter, r *http.Request) {
 	identifier, _ := AuthenticatedTokenIdentifier(r)
-	recipe, rid, ok := ReadRecipeRequestResponse(w, r)
+	recipe, rid, ok := ReadRecipeRequestResponse(w, r, identifier)
 	if !ok {
 		return
 	}
@@ -392,11 +396,11 @@ func (ctx *RecipesContext) HandleCreateResponse(w http.ResponseWriter, r *http.R
 
 	if err != nil {
 		http.Error(w, "Failed to add recipe", 400)
-		logger.Debug("Failed to add recipe", zap.String("identifier", rid), zap.String("user", string(identifier)), zap.Error(err))
+		logger.Debug("Failed to add recipe", zap.String("identifier", rid), User(identifier), zap.Error(err))
 		return
 	}
 
-	logger.Debug("Created recipe", zap.String("identifier", rid), zap.String("user", string(identifier)), zap.Error(err))
+	logger.Debug("Created recipe", zap.String("identifier", rid), User(identifier), zap.Error(err))
 	ctx.RedirectToRecipe(w, r, rid)
 }
 
@@ -420,7 +424,7 @@ func (ctx *RecipesContext) HandleEditResponse(w http.ResponseWriter, r *http.Req
 	vars := mux.Vars(r)
 	oldRid := vars["recipe"]
 
-	recipe, rid, ridOk := ReadRecipeRequestResponse(w, r)
+	recipe, rid, ridOk := ReadRecipeRequestResponse(w, r, identifier)
 	if !ridOk {
 		return
 	}
@@ -432,11 +436,11 @@ func (ctx *RecipesContext) HandleEditResponse(w http.ResponseWriter, r *http.Req
 	}
 	if err != nil {
 		http.Error(w, "Failed to replace recipe", 400)
-		logger.Debug("Failed to replace recipe", zap.String("id", rid), zap.String("old-id", oldRid), zap.String("user", string(identifier)), zap.Error(err))
+		logger.Debug("Failed to replace recipe", zap.String("id", rid), zap.String("old-id", oldRid), User(identifier), zap.Error(err))
 		return
 	}
 
-	logger.Debug("Replaced recipe", zap.String("id", rid), zap.String("old-id", oldRid), zap.String("user", string(identifier)))
+	logger.Debug("Replaced recipe", zap.String("id", rid), zap.String("old-id", oldRid), User(identifier))
 	ctx.RedirectToRecipe(w, r, rid)
 }
 
@@ -452,10 +456,10 @@ func (ctx *RecipesContext) HandleDeleteResponse(w http.ResponseWriter, r *http.R
 	}
 	if err != nil {
 		http.Error(w, "Failed to delete recipe", 400)
-		logger.Debug("Failed to delete recipe", zap.String("id", rid), zap.String("user", string(identifier)), zap.Error(err))
+		logger.Debug("Failed to delete recipe", zap.String("id", rid), User(identifier), zap.Error(err))
 		return
 	}
-	logger.Debug("Deleted recipe", zap.String("id", rid), zap.String("user", string(identifier)))
+	logger.Debug("Deleted recipe", zap.String("id", rid), User(identifier))
 	ctx.RedirectTo(w, r, "/")
 }
 
