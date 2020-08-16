@@ -14,15 +14,9 @@
 {{- define "ingredients-section" -}}
     <div class="ingredients-section hover-show-visible-base">
         <div class="toolbar-wrapper">
-            <div class="toolbar toolbar-left toolbar-3 hover-show-visible vspace-between-small">
-                <button tabindex="-1" class="tool-button button-delete fa fa-times"></button>
-            </div>
+            <div class="toolbar toolbar-left toolbar-3 hover-show-visible vspace-between-small"><button tabindex="-1" class="tool-button button-delete fa fa-times"></button></div>
             <div class="toolbar-center"><h6 class="mb-0"><input class="ingredients-section-name-input editable" value="{{ .Heading }}" placeholder="Überschrift" /></h6></div>
-            <div class="toolbar toolbar-right toolbar-3 hover-show-visible vspace-between-small">
-                <button tabindex="-1" class="tool-button button-import fa fa-download" data-toggle="modal" data-target="#import-ingredients-text-modal"></button>
-                <button tabindex="-1" class="tool-button button-up fa fa-arrow-up"></button>
-                <button tabindex="-1" class="tool-button button-down fa fa-arrow-down"></button>
-            </div>
+            <div class="toolbar toolbar-right toolbar-3 hover-show-visible vspace-between-small"><button tabindex="-1" class="tool-button button-import fa fa-download" data-toggle="modal" data-target="#import-ingredients-text-modal"></button><button tabindex="-1" class="tool-button button-up fa fa-arrow-up"></button><button tabindex="-1" class="tool-button button-down fa fa-arrow-down"></button></div>
         </div>
         <div class="ingredients-table">
             {{- range .Ingredients -}}
@@ -36,6 +30,9 @@
 <!DOCTYPE html>
 <head>
     {{ template "head.html" . }}
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+	<script src="{{ .BaseUrl }}/static/bootstrap-4.5.2/js/bootstrap.min.js" crossorigin="anonymous"></script>
     <script src="{{ .BaseUrl }}/static/js/edit.js"></script>
 </head>
 <body>
@@ -83,10 +80,7 @@
             <div class="center toast-container fixed-bottom">
                 <div id="toast-submit-failed" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true" data-delay="5000">
                     <div class="toast-header">
-                        <strong class="mr-auto">Speichern fehlgeschlagen</strong>
-                        <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
+                        <strong class="mr-auto">Speichern fehlgeschlagen</strong><button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                     </div>
                     <div class="toast-body"></div>
                 </div>
@@ -101,10 +95,7 @@
                         <div class="modal-body">
                             <textarea id="import-ingredients-text-area" rows="4" placeholder="[Anzahl] [Einheit] [Zutat]"></textarea>
                         </div>
-                        <div class="modal-footer justify-content-center">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Abbrechen</button>
-                            <button id="import-ingredients-text-button" type="button" class="btn btn-primary">Importieren</button>
-                        </div>
+                        <div class="modal-footer justify-content-center"><button type="button" class="btn btn-secondary" data-dismiss="modal">Abbrechen</button><button id="import-ingredients-text-button" type="button" class="btn btn-primary">Importieren</button></div>
                     </div>
                 </div>
             </div>
@@ -119,10 +110,7 @@
                             <div class="modal-body">
                                 Dieses Rezept wirklich löschen?
                             </div>
-                            <div class="modal-footer justify-content-center">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Abbrechen</button>
-                                <button id="delete-recipe-button" type="button" class="btn btn-danger" data-method="post" data-action="{{ .BaseUrl }}/delete/{{ .Id }}">Löschen</button>
-                            </div>
+                            <div class="modal-footer justify-content-center"><button type="button" class="btn btn-secondary" data-dismiss="modal">Abbrechen</button><button id="delete-recipe-button" type="button" class="btn btn-danger" data-method="post" data-action="{{ .BaseUrl }}/delete/{{ .Id }}">Löschen</button></div>
                         </div>
                     </div>
                 </div>
