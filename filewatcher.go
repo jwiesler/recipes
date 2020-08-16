@@ -4,9 +4,8 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/gohugoio/hugo/watcher"
 	"github.com/pkg/errors"
-	"log"
+	"go.uber.org/zap"
 	"path/filepath"
-	"strconv"
 	"sync"
 	"time"
 )
@@ -38,7 +37,7 @@ func NewFileWatcher(interval time.Duration) (*FileWatcher, error) {
 				w.handleEvents(e)
 			case err := <-b.Errors:
 				if err != nil {
-					log.Print("Error while watching: ", err)
+					logger.Warn("Error while watching", zap.Error(err))
 				}
 			}
 		}
@@ -63,7 +62,7 @@ func (w *FileWatcher) handleEvents(e []fsnotify.Event) {
 			d, ok = w.folderDispatchers[k]
 		}
 		if !ok {
-			log.Print("Unregistered listener for ", strconv.Quote(event.Name))
+			logger.Warn("Unregistered listener", zap.String("path", event.Name))
 			continue
 		}
 		de, ok := m[k]

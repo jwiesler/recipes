@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"go.uber.org/zap"
 	"os"
 	"path"
 )
@@ -47,7 +47,7 @@ func (m *RecipesDatabase) Get(id string) (*RawRecipe, bool) {
 func (m *RecipesDatabase) GetMustExist(id string) *RawRecipe {
 	r, ok := m.Get(id)
 	if !ok {
-		log.Panic("Recipe should be in database")
+		logger.Panic("Recipe should be in database", zap.String("id", id))
 	}
 	return r
 }

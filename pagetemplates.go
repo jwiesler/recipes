@@ -7,11 +7,10 @@ import (
 	"github.com/tdewolff/minify/css"
 	"github.com/tdewolff/minify/html"
 	"github.com/tdewolff/minify/svg"
+	"go.uber.org/zap"
 	"html/template"
 	"io"
-	"log"
 	"path/filepath"
-	"strconv"
 	"sync"
 )
 
@@ -163,7 +162,7 @@ func (r *PageRenderer) RenderHome(w io.Writer, recipes map[string]*RawRecipe) er
 		},
 		Recipes: recipes,
 	}
-	log.Print("Rendering home page")
+	logger.Debug("Rendering home page")
 	return r.Templates.RenderHome(w, &info)
 }
 
@@ -177,7 +176,7 @@ func (r *PageRenderer) RenderRecipe(w io.Writer, rid string, recipe *RawRecipe) 
 			Id:      rid,
 		},
 	}
-	log.Print("Rendering recipe page ", strconv.Quote(rid))
+	logger.Debug("Rendering recipe page", zap.String("id", rid))
 	return r.Templates.RenderRecipe(w, &page)
 }
 
@@ -190,7 +189,7 @@ func (r *PageRenderer) RenderEditRecipe(w io.Writer, rid string, recipe *RawReci
 			Id:      rid,
 		},
 	}
-	log.Print("Rendering recipe edit page ", strconv.Quote(rid))
+	logger.Debug("Rendering recipe edit page", zap.String("id", rid))
 	return r.Templates.RenderEdit(w, &page)
 }
 
@@ -201,6 +200,6 @@ func (r *PageRenderer) RenderCreate(w io.Writer) error {
 			Title:   "Neues Rezept",
 		},
 	}
-	log.Print("Rendering create page")
+	logger.Debug("Rendering create page")
 	return r.Templates.RenderEdit(w, &page)
 }

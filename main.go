@@ -7,12 +7,14 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/gorilla/mux"
 	"github.com/urfave/cli"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"golang.org/x/text/runes"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
+	"gopkg.in/natefinch/lumberjack.v2"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -21,6 +23,8 @@ import (
 	"time"
 	"unicode"
 )
+
+var logger *zap.Logger
 
 type RawRecipeWithId struct {
 	Recipe *RawRecipe
@@ -115,9 +119,9 @@ func (ctx *RecipesContext) StartWatchTokenFile(file string) error {
 			return
 		}
 
-		log.Print("Reloading tokens file")
+		logger.Debug("Reloading tokens file", zap.String("path", file))
 		if err := ctx.TokenManager.ReloadFromFile(file); err != nil {
-			log.Print("Failed to reload tokens: ", err)
+			logger.Warn("Failed to reload tokens", zap.Error(err))
 		}
 	})
 }
@@ -128,9 +132,9 @@ func (ctx *RecipesContext) StartWatchTemplates(folder string, pattern string) er
 			return
 		}
 
-		log.Print("Reloading templates from \"", folder, "\"")
+		logger.Debug("Reloading templates", zap.String("path", folder))
 		if err := ctx.Templates.Load(folder, pattern); err != nil {
-			log.Print("Error reloading templates: ", err)
+			logger.Warn("Failed to reload templates", zap.Error(err))
 		}
 		ctx.Recipes.InvalidateAll()
 	})
@@ -138,13 +142,13 @@ func (ctx *RecipesContext) StartWatchTemplates(folder string, pattern string) er
 
 func Init(params *RecipesParams) (*RecipesContext, error) {
 	templates := PageTemplates{}
-	log.Print("Loading templates from ", strconv.Quote(params.templatesDirPath))
+	logger.Info("Loading templates ", zap.String("path", params.templatesDirPath), zap.String("pattern", params.templatesPattern))
 	err := templates.Load(params.templatesDirPath, params.templatesPattern)
 	if err != nil {
 		return nil, err
 	}
 
-	log.Print("Loading recipes from ", strconv.Quote(params.recipesDirPath))
+	logger.Info("Loading recipes", zap.String("path", params.recipesDirPath))
 	err = os.MkdirAll(params.recipesDirPath, os.ModePerm)
 	if err != nil {
 		return nil, err
@@ -158,12 +162,12 @@ func Init(params *RecipesParams) (*RecipesContext, error) {
 	for _, r := range recipesList {
 		recipes[r.Id] = r.Recipe
 	}
-	log.Print("Found ", len(recipes), " recipes")
+	logger.Info("Recipes loaded", zap.Int("count", len(recipes)))
 
-	log.Print("Reading tokens file ", strconv.Quote(params.tokensPath))
+	logger.Info("Loading tokens file", zap.String("path", params.tokensPath))
 	tokens := NewTokenManager("token")
 	if _, err := os.Stat(params.tokensPath); os.IsNotExist(err) {
-		log.Print("Tokens file not found, creating new")
+		logger.Info("Tokens file not found, creating new")
 		b, err := json.Marshal(make(map[Identifier]Token))
 		if err != nil {
 			return nil, err
@@ -176,7 +180,7 @@ func Init(params *RecipesParams) (*RecipesContext, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Print("Found ", len(tokens.tokens), " tokens")
+	logger.Info("Tokens loaded", zap.Int("count", len(tokens.tokens)))
 
 	watcher, err := NewFileWatcher(1 * time.Second)
 	if err != nil {
@@ -188,7 +192,7 @@ func Init(params *RecipesParams) (*RecipesContext, error) {
 		recipes: recipes,
 	}
 
-	log.Print("Using base url ", strconv.Quote(params.baseUrl))
+	logger.Info("Creating renderer", zap.String("base-url", params.baseUrl))
 	renderer := &PageRenderer{
 		BaseUrl:   params.baseUrl,
 		Templates: &templates,
@@ -259,9 +263,7 @@ func (ctx *RecipesContext) HandleAuthentication(w http.ResponseWriter, r *http.R
 		i = "Unknown user"
 	}
 
-	if _, err := w.Write([]byte(i)); err != nil {
-		log.Panic(err)
-	}
+	WriteString(w, string(i))
 }
 
 func (ctx *RecipesContext) HandleAuthenticationSet(w http.ResponseWriter, r *http.Request) {
@@ -278,7 +280,9 @@ func (ctx *RecipesContext) HandleAuthenticationSet(w http.ResponseWriter, r *htt
 	}
 	http.SetCookie(w, &cookie)
 	if _, err := w.Write([]byte("Success")); err != nil {
-		log.Panic(err)
+		http.Error(w, "Failed to set cookie", 400)
+		logger.Debug("Failed to set cookie", zap.String("token", token), zap.Error(err))
+		return
 	}
 }
 
@@ -289,24 +293,22 @@ func (ctx *RecipesContext) HandleAuthenticationGenerate(w http.ResponseWriter, r
 	identifier := strings.TrimSpace(vars["identifier"])
 	if ok, _ := identifierRegex.MatchString(identifier); !ok {
 		http.Error(w, "Identifier contains invalid characters", 400)
-		log.Print("Identifier ", strconv.Quote(identifier), " contains invalid characters")
+		logger.Debug("Identifier contains invalid characters", zap.String("identifier", identifier))
 		return
 	}
 
 	token, err := ctx.TokenManager.GenerateFor(Identifier(identifier))
 	if err != nil {
 		http.Error(w, "Failed to generate a token", 400)
-		log.Print("Failed to generate a token for ", strconv.Quote(identifier), ": ", err)
+		logger.Debug("Failed to generate a token", zap.String("identifier", identifier), zap.Error(err))
 		return
 	}
-	if _, err = w.Write([]byte(token)); err != nil {
-		log.Panic(err)
-	}
+	WriteString(w, string(token))
 }
 
 func HandleRenderError(err error) {
 	if err != nil {
-		panic(err)
+		logger.Panic("Failed to write string", zap.Error(err))
 	}
 }
 
@@ -349,14 +351,14 @@ func ReadRecipeRequestResponse(w http.ResponseWriter, r *http.Request) (recipe *
 	recipe, err := ReadRecipeFromResponse(r.Body)
 	if err != nil {
 		http.Error(w, "Failed to read edit post request body", 400)
-		log.Print("Failed to read edit post request body ", err)
+		logger.Debug("Failed to read edit post request body", zap.Error(err))
 		return nil, "", false
 	}
 
 	rid = TransformToIdString(strings.TrimSpace(recipe.Name))
 	if len(rid) == 0 {
 		http.Error(w, "Can't create a recipe with an empty id", 400)
-		log.Print("Can't create a recipe with an empty id")
+		logger.Debug("Can't create a recipe with an empty id")
 		return nil, "", false
 	}
 	return recipe, rid, true
@@ -370,13 +372,13 @@ func (ctx *RecipesContext) RedirectToRecipe(w http.ResponseWriter, r *http.Reque
 	ctx.RedirectTo(w, r, "/recipe/"+rid)
 }
 
-func ErrorPlaylistAlreadyExists(w http.ResponseWriter, rid string) {
-	http.Error(w, "A playlist with this id already exists", 400)
-	log.Print("A playlist with the id \"", rid, "\" already exists")
+func ErrorPlaylistAlreadyExists(w http.ResponseWriter, rid string, identifier Identifier) {
+	http.Error(w, "A recipe with this id already exists", 400)
+	logger.Debug("A recipe with this id already exists", zap.String("id", rid), zap.String("user", string(identifier)))
 }
 
 func (ctx *RecipesContext) HandleCreateResponse(w http.ResponseWriter, r *http.Request) {
-	id, _ := AuthenticatedTokenIdentifier(r)
+	identifier, _ := AuthenticatedTokenIdentifier(r)
 	recipe, rid, ok := ReadRecipeRequestResponse(w, r)
 	if !ok {
 		return
@@ -384,17 +386,17 @@ func (ctx *RecipesContext) HandleCreateResponse(w http.ResponseWriter, r *http.R
 
 	alreadyContained, err := ctx.Recipes.AddRecipe(rid, recipe)
 	if alreadyContained {
-		ErrorPlaylistAlreadyExists(w, rid)
+		ErrorPlaylistAlreadyExists(w, rid, identifier)
 		return
 	}
 
 	if err != nil {
-		http.Error(w, "Failed to add playlist", 400)
-		log.Print("Failed to add playlist \"", rid, "\": ", err)
+		http.Error(w, "Failed to add recipe", 400)
+		logger.Debug("Failed to add recipe", zap.String("identifier", rid), zap.String("user", string(identifier)), zap.Error(err))
 		return
 	}
 
-	log.Print("Created recipe \"", rid, "\" (", id, ")")
+	logger.Debug("Created recipe", zap.String("identifier", rid), zap.String("user", string(identifier)), zap.Error(err))
 	ctx.RedirectToRecipe(w, r, rid)
 }
 
@@ -425,16 +427,16 @@ func (ctx *RecipesContext) HandleEditResponse(w http.ResponseWriter, r *http.Req
 
 	alreadyContained, err := ctx.Recipes.ReplaceRecipe(rid, oldRid, recipe)
 	if alreadyContained {
-		ErrorPlaylistAlreadyExists(w, rid)
+		ErrorPlaylistAlreadyExists(w, rid, identifier)
 		return
 	}
 	if err != nil {
 		http.Error(w, "Failed to replace recipe", 400)
-		log.Print("Failed to replace recipe ", strconv.Quote(oldRid), " with ", strconv.Quote(rid), ": ", err)
+		logger.Debug("Failed to replace recipe", zap.String("id", rid), zap.String("old-id", oldRid), zap.String("user", string(identifier)), zap.Error(err))
 		return
 	}
 
-	log.Print("Updated recipe ", strconv.Quote(rid), " (", identifier, ")")
+	logger.Debug("Replaced recipe", zap.String("id", rid), zap.String("old-id", oldRid), zap.String("user", string(identifier)))
 	ctx.RedirectToRecipe(w, r, rid)
 }
 
@@ -449,10 +451,11 @@ func (ctx *RecipesContext) HandleDeleteResponse(w http.ResponseWriter, r *http.R
 		return
 	}
 	if err != nil {
-		http.Error(w, "Failed to replace recipe", 400)
+		http.Error(w, "Failed to delete recipe", 400)
+		logger.Debug("Failed to delete recipe", zap.String("id", rid), zap.String("user", string(identifier)), zap.Error(err))
 		return
 	}
-	log.Print("Deleted recipe ", strconv.Quote(rid), " (", identifier, ")")
+	logger.Debug("Deleted recipe", zap.String("id", rid), zap.String("user", string(identifier)))
 	ctx.RedirectTo(w, r, "/")
 }
 
@@ -550,7 +553,7 @@ func RunServer(params *ServerParams) error {
 	InitHandlers(r, ctx)
 
 	addr := params.address + ":" + strconv.Itoa(params.port)
-	log.Print("Starting server on ", addr)
+	logger.Info("Starting server", zap.String("address", addr), zap.Bool("https", !params.unsecure))
 	if params.unsecure {
 		return http.ListenAndServe(addr, r)
 	} else {
@@ -558,8 +561,27 @@ func RunServer(params *ServerParams) error {
 	}
 }
 
+func InitLogger(file string, l zapcore.Level) *zap.Logger {
+	w := zapcore.AddSync(&lumberjack.Logger{
+		Filename:   file,
+		MaxSize:    50, // megabytes
+		MaxBackups: 3,
+		MaxAge:     28, // days
+	})
+	e := zap.NewProductionEncoderConfig()
+	e.EncodeTime = zapcore.ISO8601TimeEncoder
+	core := zapcore.NewCore(
+		zapcore.NewConsoleEncoder(e),
+		w,
+		l,
+	)
+	return zap.New(core)
+}
+
 func main() {
 	params := ServerParams{}
+	logger = InitLogger("logs/server.log", zap.DebugLevel)
+	defer logger.Sync()
 
 	app := &cli.App{
 		Flags: []cli.Flag{
@@ -632,6 +654,6 @@ func main() {
 	}
 
 	if err := app.Run(os.Args); err != nil {
-		log.Panic(err)
+		logger.Panic("Fatal error from app", zap.Error(err))
 	}
 }
