@@ -9,7 +9,7 @@
             <div class="spacing-between-small">
                 <h2>{{ .Recipe.Name }}</h2>
                 {{- if .Recipe.Description -}}
-                    <p>{{ .Recipe.Description }}</p>
+                    <p class="recipe-description">{{ .Recipe.Description }}</p>
                 {{- end -}}
                 {{- if .Recipe.ImagePath -}}
                     <div><img class="parent-sized" src="{{ .Recipe.ImagePath }}"/></div>
@@ -20,7 +20,7 @@
                 {{- range .Recipe.IngredientsSections -}}
                     <div class="ingredients-section">
                         {{- if .Heading -}}
-                            <h6 class="mb-0">{{ .Heading }}</h6>
+                            <h6>{{ .Heading }}</h6>
                         {{- end -}}
                         <div class="ingredients-table">
                             {{- range .Ingredients -}}

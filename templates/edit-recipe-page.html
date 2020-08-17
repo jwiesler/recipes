@@ -15,7 +15,7 @@
     <div class="ingredients-section hover-show-visible-base">
         <div class="toolbar-wrapper">
             <div class="toolbar toolbar-left toolbar-3 hover-show-visible vspace-between-small"><button tabindex="-1" class="tool-button button-delete fa fa-times"></button></div>
-            <div class="toolbar-center"><h6 class="mb-0"><input class="ingredients-section-name-input editable" value="{{ .Heading }}" placeholder="Überschrift" /></h6></div>
+            <div class="toolbar-center"><h6><input class="ingredients-section-name-input editable" value="{{ .Heading }}" placeholder="Überschrift" /></h6></div>
             <div class="toolbar toolbar-right toolbar-3 hover-show-visible vspace-between-small"><button tabindex="-1" class="tool-button button-import fa fa-download" data-toggle="modal" data-target="#import-ingredients-text-modal"></button><button tabindex="-1" class="tool-button button-up fa fa-arrow-up"></button><button tabindex="-1" class="tool-button button-down fa fa-arrow-down"></button></div>
         </div>
         <div class="ingredients-table">
@@ -43,7 +43,7 @@
                 <div class="spacing-between-large">
                     <div class="spacing-between-small">
                         <h2><input id="name" class="editable" placeholder="Name" autocomplete="off" {{- with .Recipe }} value="{{ .Name }}"{{- end -}} /></h2>
-                        <p><input id="description" class="editable" placeholder="Beschreibung" autocomplete="off" {{- with .Recipe }} value="{{ .Description }}"{{- end -}} /></p>
+                        <p><input id="description" class="recipe-description" class="editable" placeholder="Beschreibung" autocomplete="off" {{- with .Recipe }} value="{{ .Description }}"{{- end -}} /></p>
                         <div>
                             {{- with .Recipe -}}
                                 {{- if .ImagePath -}}
