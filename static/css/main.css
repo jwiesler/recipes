@@ -12,11 +12,29 @@ body, .modal-content {
 .content a.button {
   color: inherit;
 }
-
-h1, h2, h3, h4, h5, h6 {
+.content h1, .content h2, .content h3, .content h4, .content h5, .content h6,
+.content .h1, .content .h2, .content .h3, .content .h4, .content .h5, .content .h6 {
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: 3px;
+}
+.content h1, .content .h1 {
+  font-size: 1.75rem;
+}
+.content h2, .content .h2 {
+  font-size: 1.5rem;
+}
+.content h3, .content .h3 {
+  font-size: 1.25rem;
+}
+.content h4, .content .h4 {
+  font-size: 1rem;
+}
+.content h5, .content .h5 {
+  font-size: 1.25rem;
+}
+.content h6, .content .h6 {
+  font-size: 1rem;
 }
 
 .nav-container, .toast-container, .recipe-container {
@@ -35,32 +53,24 @@ h1, h2, h3, h4, h5, h6 {
   margin: 1em 0.5em;
 }
 
-.text-content {
-  color: #aaa;
-}
-
 .markdown-wrapper p {
   margin-bottom: 0.5rem;
 }
-.markdown-wrapper h1 {
+.markdown-wrapper h1, .markdown-wrapper h2, .markdown-wrapper h3, .markdown-wrapper h4, .markdown-wrapper h5, .markdown-wrapper h6 {
   color: #d4dadd;
-  font-size: 1.75rem;
   margin-bottom: 0.25rem;
+}
+.markdown-wrapper h1 {
+  font-size: 1.25rem;
 }
 .markdown-wrapper h2 {
-  color: #d4dadd;
-  font-size: 1.5rem;
-  margin-bottom: 0.25rem;
+  font-size: 1rem;
 }
 .markdown-wrapper h3 {
-  color: #d4dadd;
-  font-size: 1.25rem;
-  margin-bottom: 0.25rem;
+  font-size: 1rem;
 }
 .markdown-wrapper h4, .markdown-wrapper h5, .markdown-wrapper h6 {
-  color: #d4dadd;
   font-size: 1rem;
-  margin-bottom: 0.25rem;
 }
 .markdown-wrapper ol, .markdown-wrapper ul {
   padding: 0;
@@ -74,7 +84,7 @@ h1, h2, h3, h4, h5, h6 {
   width: 100%;
 }
 .ingredients-table > *:nth-child(even) {
-  background-color: #343434;
+  background-color: #454545;
 }
 .ingredients-table .ingredient-amount {
   width: 40%;
@@ -114,7 +124,7 @@ h1, h2, h3, h4, h5, h6 {
   color: aliceblue;
 }
 .editable input, .editable textarea {
-  border: 1px solid #343434;
+  border: 1px solid #454545;
   padding: 0.2em 0.5em;
   text-align: inherit;
   background-color: inherit;
@@ -149,7 +159,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 .tool-button:hover {
   text-decoration: none;
-  background-color: #343434;
+  background-color: #454545;
 }
 .tool-button.fa {
   width: 1.5em;
@@ -217,7 +227,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .toast {
-  background-color: #343434;
+  background-color: #454545;
 }
 
 #toast-submit-failed {
@@ -255,8 +265,22 @@ h1, h2, h3, h4, h5, h6 {
   color: rgba(255, 140, 140, 0.75);
 }
 
+.navbar-dark .navbar-brand {
+  color: rgba(255, 255, 255, 0.5);
+}
+.navbar-dark .navbar-brand:disabled {
+  color: rgba(255, 255, 255, 0.25);
+}
+.navbar-dark .navbar-brand:hover:not(:disabled) {
+  color: rgba(255, 255, 255, 0.75);
+}
+
 .modal-header, .modal-footer {
-  border-color: #343434;
+  border-color: #454545;
+}
+
+.text-content {
+  color: #aaa;
 }
 
 /*# sourceMappingURL=main.css.map */
