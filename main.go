@@ -563,7 +563,7 @@ func RunServer(params *ServerParams) error {
 }
 
 func InitLogger(file string, l zapcore.Level) *zap.Logger {
-	w := zapcore.AddSync(&lumberjack.Logger{
+	logFileWriter := zapcore.AddSync(&lumberjack.Logger{
 		Filename:   file,
 		MaxSize:    50, // megabytes
 		MaxBackups: 3,
@@ -573,7 +573,7 @@ func InitLogger(file string, l zapcore.Level) *zap.Logger {
 	e.EncodeTime = zapcore.ISO8601TimeEncoder
 	core := zapcore.NewCore(
 		zapcore.NewConsoleEncoder(e),
-		w,
+		zapcore.NewMultiWriteSyncer(logFileWriter, os.Stderr),
 		l,
 	)
 	return zap.New(core)
