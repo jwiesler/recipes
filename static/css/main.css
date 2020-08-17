@@ -219,7 +219,7 @@ body, .modal-content {
 }
 
 .recipes-list {
-  list-style-position: inside;
+  list-style: none;
   padding: 0;
 }
 .recipes-list > li {
