@@ -1,3 +1,7 @@
+{{- define "entry" -}}
+    <a href="{{ .BaseUrl }}/recipe/{{ .Id }}">{{ .Recipe.Name }}</a>
+    {{- if .Recipe.Description }} <span>&#8211; {{ .Recipe.Description }}</span>{{- end -}}
+{{- end -}}
 <!DOCTYPE html>
 <head>
     {{ template "head.html" . }}
@@ -5,11 +9,13 @@
 <body>
     {{ template "navbar.html" (dict "Type" "" "BaseUrl" .BaseUrl) }}
     <div class="content mx-auto recipe-container spacing-between">
-        <h2>Rezepte</h2>
+        <h1>Rezepte</h1>
         <ul class="recipes-list">
             {{ $b := .BaseUrl }}
             {{ range $k, $v := .Recipes }}
-                <li><a href="{{ $b }}/recipe/{{ $k }}">{{ $v.Name }}</a></li>
+                <li>
+                    {{ template "entry" (dict "BaseUrl" $b "Id" $k "Recipe" $v) }}
+                </li>
             {{ end }}
         </ul>
     </div>

@@ -1,0 +1,302 @@
+@use "sass:color";
+
+$background-color: #222;
+$secondary-background-color: #343434;
+$link-color: #737259;
+$text-primary-color: #d4dadd;
+
+body, .modal-content {
+	background-color: $background-color;
+}
+
+.content {
+	text-align: center;
+	color: #d4dadd;
+
+	a {
+		color: $link-color;
+	}
+
+	a.button {
+		color: inherit;
+	}
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-weight: bold;
+	text-transform: uppercase;
+	letter-spacing: 3px;
+}
+
+h3 {
+
+}
+
+.nav-container, .toast-container, .recipe-container {
+	max-width: 500px;
+}
+
+.nav-container {
+	padding-left: 0.5rem;
+}
+
+.recipe-container {
+	padding: 1em 0.5em;
+}
+
+.toast-container {
+	> .toast {
+		margin: 1em 0.5em;
+	}
+}
+
+.text-content {
+	color: #aaa;
+}
+
+.markdown-wrapper {
+	p {
+		margin-bottom: 0.5rem;
+	}
+
+	h1 {
+		color: $text-primary-color;
+		font-size: 1.75rem;
+		margin-bottom: 0.25rem;
+	}
+
+	h2 {
+		color: $text-primary-color;
+		font-size: 1.5rem;
+		margin-bottom: 0.25rem;
+	}
+
+	h3 {
+		color: $text-primary-color;
+		font-size: 1.25rem;
+		margin-bottom: 0.25rem;
+	}
+
+	h4, h5, h6 {
+		color: $text-primary-color;
+		font-size: 1rem;
+		margin-bottom: 0.25rem;
+	}
+
+	ol, ul {
+		padding: 0;
+		list-style-position: inside;
+	}
+
+	li::marker {
+		color: $text-primary-color;
+	}
+}
+
+.ingredients-table {
+	width: 100%;
+
+	>*:nth-child(even) {
+		background-color: $secondary-background-color;
+	}
+
+	.ingredient-amount {
+		width: 40%;
+		text-align: right;
+		padding: 0.5em 0.25em 0.5em 0.5em;
+	}
+
+	.ingredient-name {
+		width: 60%;
+		text-align: left;
+		padding: 0.5em 0.5em 0.5em 0.25em;
+	}
+
+	.ingredients-row-wrapper {
+		display: flex;
+	}
+
+	.ingredient-unit-input {
+		flex-basis: 4.3em;
+		min-width: 0;
+		flex-shrink: 0;
+	}
+
+	.ingredient-amount-input {
+		flex-basis: 4em;
+		min-width: 0;
+		flex-grow: 1;
+	}
+
+	.ingredient-name-input {
+		width: 100%;
+	}
+}
+
+.editable {
+	.ingredient-amount, .ingredient-name {
+		display: flex;
+		align-items: center;
+	}
+
+	input:hover {
+		color: aliceblue;
+	}
+
+	input, textarea {
+		border: 1px solid $secondary-background-color;
+		padding: 0.2em 0.5em;
+		text-align: inherit;
+		background-color: inherit;
+		color: inherit;
+		min-width: 0;
+		width: 100%;
+	}
+
+	textarea {
+		width: 100%;
+		overflow-x: auto;
+		resize: vertical;
+		text-align: left;
+		padding: 0.5em;
+
+		&#instructions {
+			min-height: 20em;
+		}
+	}
+}
+
+.nav-button, .tool-button {
+	background: none;
+	border: none;
+	color: inherit;
+
+	&:focus {
+		outline: none;
+	}
+}
+
+.tool-button {
+	padding: 0.25em;
+	vertical-align: middle;
+	text-align: center;
+
+	&:hover {
+		text-decoration: none;
+		background-color: $secondary-background-color;
+	}
+
+	&.fa {
+		width: 1.5em;
+		height: 1.5em;
+	}
+
+	&:disabled {
+		opacity: 0.65;
+	}
+}
+
+.toolbar {
+	display: flex;
+	align-items: center;
+}
+
+.toolbar-wrapper {
+	display: flex;
+	flex-direction: row;
+}
+
+.toolbar-3 {
+	flex: 1 0 5.5em;
+}
+
+.toolbar-1 {
+	flex: 1 0 1.5em;
+}
+
+.toolbar-center {
+	flex-grow: 2;
+}
+
+.toolbar-left {
+	justify-content: flex-start;
+}
+
+.toolbar-right {
+	justify-content: flex-end;
+}
+
+.toolbar-wrapper {
+	>.toolbar-left {
+		margin-left: 0.5em;
+	}
+	>.toolbar-right {
+		margin-right: 0.5em;
+	}
+}
+
+.toolbar-center input.editable, .submit-button, .delete-recipe-button {
+	width: 100%;
+}
+
+.button-add-section {
+	font-size: 2rem;
+}
+
+#defaults {
+	display: none;
+}
+
+.recipes-list {
+	list-style-position: inside;
+	padding: 0;
+
+	>li {
+		padding: 0.125rem;
+	}
+}
+
+.toast {
+	background-color: $secondary-background-color;
+}
+
+#toast-submit-failed {
+	max-width: unset;
+}
+
+.navbar-nav {
+	flex-direction: row;
+}
+
+.nav-button, .nav-link {
+	&.fa {
+		font-size: 1.5rem;
+		width: 2.5rem;
+		text-align: center;
+	}
+}
+
+@mixin button-effects($color) {
+	color: color.change($color, $alpha: 0.5);
+
+	&:disabled {
+		color: color.change($color, $alpha: 0.25);
+	}
+
+	&:hover:not(:disabled) {
+		color: color.change($color, $alpha: 0.75);
+	}
+}
+
+.nav-button {
+	@include button-effects(#FFFFFF);
+	padding: 0.5rem 0.5rem;
+}
+
+#delete-recipe-modal-button {
+	@include button-effects(#ff8c8c);
+}
+
+.modal-header, .modal-footer {
+	border-color: $secondary-background-color;
+}

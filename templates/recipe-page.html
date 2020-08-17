@@ -7,42 +7,48 @@
     <div class="content mx-auto recipe-container">
         <div class="spacing-between-large">
             <div class="spacing-between-small">
-                <h2>{{ .Recipe.Name }}</h2>
+                <h1>{{ .Recipe.Name }}</h1>
                 {{- if .Recipe.Description -}}
-                    <p class="recipe-description">{{ .Recipe.Description }}</p>
+                    <p class="text-content">{{ .Recipe.Description }}</p>
                 {{- end -}}
                 {{- if .Recipe.ImagePath -}}
                     <div><img class="parent-sized" src="{{ .Recipe.ImagePath }}"/></div>
                 {{- end -}}
             </div>
-            <div class="spacing-between">
-                <h4>Zutaten</h4>
-                {{- range .Recipe.IngredientsSections -}}
-                    <div class="ingredients-section">
-                        {{- if .Heading -}}
-                            <h6>{{ .Heading }}</h6>
-                        {{- end -}}
-                        <div class="ingredients-table">
-                            {{- range .Ingredients -}}
-                                <div class="ingredients-row-wrapper"><span class="ingredient-amount"><span>{{- .Amount -}}</span>{{ if unitNeedsSpace .Unit }} {{ end }}<span>
-                                            {{- if .Unit }}{{ .Unit }}{{ end -}}</span></span><span class="ingredient-name">
-                                        {{- .Name -}}
-                                    </span></div>
+            {{ with .Recipe.IngredientsSections }}
+                <div class="spacing-between">
+                    <h2>Zutaten</h2>
+                    {{- range . -}}
+                        <div class="ingredients-section">
+                            {{- if .Heading -}}
+                                <h3>{{ .Heading }}</h3>
                             {{- end -}}
+                            <div class="ingredients-table text-content">
+                                {{- range .Ingredients -}}
+                                    <div class="ingredients-row-wrapper"><span class="ingredient-amount"><span>{{- .Amount -}}</span>{{ if unitNeedsSpace .Unit }} {{ end }}<span>
+                                                {{- if .Unit }}{{ .Unit }}{{ end -}}</span></span><span class="ingredient-name">
+                                            {{- .Name -}}
+                                        </span></div>
+                                {{- end -}}
+                            </div>
                         </div>
-                    </div>
-                {{- end -}}
-            </div>
+                    {{- end -}}
+                </div>
+            {{ end }}
             {{- if .Recipe.Instructions -}}
                 <div class="spacing-between-small">
-                    <h4>Zubereitung</h4>
-                    {{ .Recipe.Instructions }}
+                    <h2>Zubereitung</h2>
+                    <div class="text-content markdown-wrapper">
+                        {{ .Recipe.Instructions }}
+                    </div>
                 </div>
             {{- end -}}
             {{- if .Recipe.Source -}}
                 <div class="spacing-between-small">
-                    <h4>Quelle</h4>
-                    {{ .Recipe.Source }}
+                    <h2>Quelle</h2>
+                    <div class="text-content markdown-wrapper">
+                        {{ .Recipe.Source }}
+                    </div>
                 </div>
             {{- end -}}
         </div>
