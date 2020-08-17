@@ -134,6 +134,10 @@ h3 {
 }
 
 .editable {
+	.ingredients-table > *:nth-child(even) input {
+		border: 1px solid #222;
+	}
+
 	.ingredient-amount, .ingredient-name {
 		display: flex;
 		align-items: center;
