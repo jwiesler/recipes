@@ -87,10 +87,10 @@ body {
   font-size: 1.25rem;
 }
 .content h5, .content .h5, .modal-content h5, .modal-content .h5 {
-  font-size: 1.5rem;
+  font-size: 1rem;
 }
 .content h6, .content .h6, .modal-content h6, .modal-content .h6 {
-  font-size: 1.25rem;
+  font-size: 1rem;
 }
 
 .nav-container, .toast-container, .recipe-container {
