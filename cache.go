@@ -80,11 +80,15 @@ func (e *PageCacheEntry) GetOrUpdate(update RenderFunction) (string, error) {
 }
 
 func (m *PageCacheMap) Get(rid string) (*RecipePagesCacheEntry, bool) {
+	m.lock.RLock()
+	defer m.lock.RUnlock()
 	pageCache, ok := m.cache[rid]
 	return pageCache, ok
 }
 
 func (m *PageCacheMap) Create(rid string) {
+	m.lock.Lock()
+	defer m.lock.Unlock()
 	m.cache[rid] = &RecipePagesCacheEntry{}
 }
 
@@ -112,12 +116,6 @@ func (m *PageCacheMap) InvalidateAll() {
 	}
 }
 
-func (c *RenderCache) GetHome() (string, error) {
-	return c.home.GetOrUpdate(func(w io.Writer) error {
-		return c.renderer.RenderHome(w, c.database.GetAll())
-	})
-}
-
 // These functions need the database write lock //
 func (c *RenderCache) InvalidateHome() {
 	c.home.Invalidate()
@@ -132,6 +130,12 @@ func (c *RenderCache) RemoveRecipe(rid string) {
 }
 
 //////////////////////////////////////////////////
+
+func (c *RenderCache) GetHome() (string, error) {
+	return c.home.GetOrUpdate(func(w io.Writer) error {
+		return c.renderer.RenderHome(w, c.database.GetAll())
+	})
+}
 
 func (c *RenderCache) GetCreatePage() (string, error) {
 	return c.create.GetOrUpdate(func(w io.Writer) error {

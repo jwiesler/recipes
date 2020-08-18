@@ -33,7 +33,6 @@ func NewHMacTokenSource(key []byte) *HMacTokenSource {
 }
 
 var ErrDoesNotMatch = errors.New("hmac does not match")
-var ErrInvalidKeySize = errors.New("invalid key size")
 
 func (m *HMacTokenSource) VerifyIsGeneratedBy(token []byte, by []byte) error {
 	b, err := m.Generate(by)
