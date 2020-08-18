@@ -18,21 +18,23 @@
             {{ with .Recipe.IngredientsSections }}
                 <div class="spacing-between">
                     <h2>Zutaten</h2>
-                    {{- range . -}}
-                        <div class="ingredients-section">
-                            {{- if .Heading -}}
-                                <h3>{{ .Heading }}</h3>
-                            {{- end -}}
-                            <div class="ingredients-table text-content">
-                                {{- range .Ingredients -}}
-                                    <div class="ingredients-row-wrapper"><span class="ingredient-amount"><span>{{- .Amount -}}</span>{{ if unitNeedsSpace .Unit }} {{ end }}<span>
-                                                {{- if .Unit }}{{ .Unit }}{{ end -}}</span></span><span class="ingredient-name">
-                                            {{- .Name -}}
-                                        </span></div>
+                    <div class="ingredients-sections spacing-between">
+                        {{- range . -}}
+                            <div class="ingredients-section">
+                                {{- if .Heading -}}
+                                    <h4>{{ .Heading }}</h4>
                                 {{- end -}}
+                                <div class="ingredients-table text-content">
+                                    {{- range .Ingredients -}}
+                                        <div class="ingredients-row-wrapper"><span class="ingredient-amount"><span>{{- .Amount -}}</span>{{ if unitNeedsSpace .Unit }} {{ end }}<span>
+                                                    {{- if .Unit }}{{ .Unit }}{{ end -}}</span></span><span class="ingredient-name">
+                                                {{- .Name -}}
+                                            </span></div>
+                                    {{- end -}}
+                                </div>
                             </div>
-                        </div>
-                    {{- end -}}
+                        {{- end -}}
+                    </div>
                 </div>
             {{ end }}
             {{- if .Recipe.Instructions -}}

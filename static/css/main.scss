@@ -1,334 +1,422 @@
 @use "sass:color";
 
-$background-color: #222;
-$secondary-background-color: #454545;
-$link-color: #919077;
-$text-primary-color: #d4dadd;
-$h1-font-size: 1.75rem;
-$h2-font-size: 1.5rem;
-$h3-font-size: 1.25rem;
-$h4-font-size: 1rem;
+$background-color: color.scale(#ffffff, $lightness: -86%); // #222
+$secondary-background-color: color.scale($background-color, $lightness: 5%);
+$tertiary-background-color: color.scale($background-color, $lightness: -5%);
+$border-color: $secondary-background-color;
+
+$text-primary-color: #ffffff;
+$text-secondary-color: color.scale($text-primary-color, $lightness: -7%);
+$link-color: color.scale(#fffdd3, $lightness: -60%, $saturation: -75%);
+$link-color-hovered: color.scale($link-color, $lightness: 10%);
+
+$h1-font-size: 2rem;
+$h2-font-size: 1.75rem;
+$h3-font-size: 1.5rem;
+$h4-font-size: 1.25rem;
 $h5-font-size: 1rem;
 $h6-font-size: 1rem;
 
-body, .modal-content {
-	background-color: $background-color;
+.hover-show-visible-base:not(:hover) {
+  .hover-show-visible {
+    visibility: hidden;
+  }
 }
 
-.content {
-	text-align: center;
-	color: #d4dadd;
+.hover-show-display-base:not(:hover) {
+  .hover-show-display {
+    display: none;
+  }
+}
 
-	a {
-		color: $link-color;
-	}
+@mixin border-between($distance, $border-style) {
+  $spacing: $distance / 2;
+  > *:not(:last-child) {
+    margin-bottom: $spacing-m;
+    padding-bottom: $spacing-m;
+    border-bottom: $border-style;
+  }
+}
 
-	a.button {
-		color: inherit;
-	}
+@mixin spacing-between($distance) {
+  > *:not(:last-child) {
+    margin-bottom: $distance;
+  }
+}
 
-	h1, h2, h3, h4, h5, h6,
-	.h1, .h2, .h3, .h4, .h5, .h6 {
-		font-weight: bold;
-		text-transform: uppercase;
-		letter-spacing: 3px;
-	}
+$spacing-l: 2rem;
+$spacing-m: 1rem;
+$spacing-s: 0.5rem;
 
-	h1, .h1 {
-		font-size: $h1-font-size;
-	}
+.border-between-large {
+  @include border-between($spacing-l, 4px solid $border-color);
+}
 
-	h2, .h2 {
-		font-size: $h2-font-size;
-	}
+.border-between {
+  @include border-between($spacing-m, 2px solid $border-color);
+}
 
-	h3, .h3 {
-		font-size: $h3-font-size;
-	}
+.border-between-small {
+  @include border-between($spacing-s, 1px solid $border-color);
+}
 
-	h4, .h4 {
-		font-size: $h4-font-size;
-	}
+.spacing-between-large {
+  @include spacing-between($spacing-l);
+}
 
-	h5, .h5 {
-		font-size: $h3-font-size;
-	}
+.spacing-between {
+  @include spacing-between($spacing-m);
+}
 
-	h6, .h6 {
-		font-size: $h4-font-size;
-	}
+.spacing-between-small {
+  @include spacing-between($spacing-s);
+}
+
+.vspace-between-small {
+  > *:not(:first-child) {
+    margin-left: 0.5rem;
+  }
+
+  > *:first-child {
+    margin-left: 0;
+  }
+}
+
+.vspace-between-small-r {
+  > *:not(:last-child) {
+    margin-right: 0.5rem;
+  }
+
+  > *:last-child {
+    margin-right: 0;
+  }
+}
+
+body {
+  background-color: $background-color;
+}
+
+.content, .modal-content {
+  text-align: center;
+  color: $text-primary-color;
+
+  a {
+    color: $link-color;
+
+    &:hover {
+      color: $link-color-hovered;
+    }
+  }
+
+  a.button {
+    color: inherit;
+  }
+
+  h1, h2, h3, h4, h5, h6,
+  .h1, .h2, .h3, .h4, .h5, .h6 {
+    letter-spacing: 2px;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+
+  h1, .h1 {
+    font-size: $h1-font-size;
+  }
+
+  h2, .h2 {
+    font-size: $h2-font-size;
+  }
+
+  h3, .h3 {
+    font-size: $h3-font-size;
+  }
+
+  h4, .h4 {
+    font-size: $h4-font-size;
+  }
+
+  h5, .h5 {
+    font-size: $h3-font-size;
+  }
+
+  h6, .h6 {
+    font-size: $h4-font-size;
+  }
 }
 
 .nav-container, .toast-container, .recipe-container {
-	max-width: 500px;
+  max-width: 500px;
 }
 
 .nav-container {
-	padding-left: 0.5rem;
+  padding-left: 0.5rem;
 }
 
 .recipe-container {
-	padding: 1em 0.5em;
+  padding: 1em 0.5em;
 }
 
 .toast-container {
-	> .toast {
-		margin: 1em 0.5em;
-	}
+  > .toast {
+    margin: 1em 0.5em;
+  }
 }
 
 .markdown-wrapper {
-	p {
-		margin-bottom: 0.5rem;
-	}
+  p {
+    margin-bottom: 0.5rem;
+  }
 
-	h1, h2, h3, h4, h5, h6 {
-		color: $text-primary-color;
-		margin-bottom: 0.25rem;
-	}
+  h1, h2, h3, h4, h5, h6 {
+    color: $text-primary-color;
+    margin-bottom: 0.25rem;
+  }
 
-	h1 {
-		font-size: $h3-font-size;
-	}
+  h1 {
+    font-size: $h3-font-size;
+  }
 
-	h2 {
-		font-size: $h4-font-size;
-	}
+  h2 {
+    font-size: $h4-font-size;
+  }
 
-	h3 {
-		font-size: $h5-font-size;
-	}
+  h3 {
+    font-size: $h5-font-size;
+  }
 
-	h4, h5, h6 {
-		font-size: $h6-font-size;
-	}
+  h4, h5, h6 {
+    font-size: $h6-font-size;
+  }
 
-	ol, ul {
-		padding: 0;
-		list-style-position: inside;
-	}
+  ol, ul {
+    padding: 0;
+    list-style-position: inside;
+  }
 
-	li::marker {
-		color: $text-primary-color;
-	}
+  li::marker {
+    color: $text-primary-color;
+  }
 }
 
 .ingredients-table {
-	width: 100%;
+  width: 100%;
+  $border-radius: 0.5rem;
 
-	>*:nth-child(even) {
-		background-color: $secondary-background-color;
-	}
+  > .ingredients-row-wrapper {
+    display: flex;
 
-	.ingredient-amount {
-		width: 40%;
-		text-align: right;
-		padding: 0.5em 0.25em 0.5em 0.5em;
-	}
+    &:nth-child(odd) {
+      border-radius: $border-radius;
+      background-color: $secondary-background-color;
 
-	.ingredient-name {
-		width: 60%;
-		text-align: left;
-		padding: 0.5em 0.5em 0.5em 0.25em;
-	}
+      input {
+        border-color: $background-color;
+      }
+    }
 
-	.ingredients-row-wrapper {
-		display: flex;
-	}
+    .ingredient-amount {
+      width: 40%;
+      text-align: right;
+      padding: 0.5em 0.25em 0.5em 0.5em;
+    }
 
-	.ingredient-unit-input {
-		flex-basis: 4.3em;
-		min-width: 0;
-		flex-shrink: 0;
-	}
-
-	.ingredient-amount-input {
-		flex-basis: 4em;
-		min-width: 0;
-		flex-grow: 1;
-	}
-
-	.ingredient-name-input {
-		width: 100%;
-	}
+    .ingredient-name {
+      width: 60%;
+      text-align: left;
+      padding: 0.5em 0.5em 0.5em 0.25em;
+    }
+  }
 }
 
 .editable {
-	.ingredients-table > *:nth-child(even) input {
-		border: 1px solid #222;
-	}
+  .ingredient-amount, .ingredient-name {
+    display: flex;
+    align-items: center;
+  }
 
-	.ingredient-amount, .ingredient-name {
-		display: flex;
-		align-items: center;
-	}
+  .ingredient-unit-input {
+    flex-basis: 4.3em;
+    min-width: 0;
+    flex-shrink: 0;
+  }
 
-	input:hover {
-		color: aliceblue;
-	}
+  .ingredient-amount-input {
+    flex-basis: 4em;
+    min-width: 0;
+    flex-grow: 1;
+  }
 
-	input, textarea {
-		border: 1px solid $secondary-background-color;
-		padding: 0.2em 0.5em;
-		text-align: inherit;
-		background-color: inherit;
-		color: inherit;
-		min-width: 0;
-		width: 100%;
-	}
+  .ingredient-name-input {
+    width: 100%;
+  }
 
-	textarea {
-		width: 100%;
-		overflow-x: auto;
-		resize: vertical;
-		text-align: left;
-		padding: 0.5em;
+  input:hover {
+    color: aliceblue;
+  }
 
-		&#instructions {
-			min-height: 20em;
-		}
-	}
+  input {
+    border-radius: 0.25em;
+  }
+
+  input, textarea {
+    border: 1px solid $secondary-background-color;
+    padding: 0.2em 0.5em;
+    text-align: inherit;
+    background-color: inherit;
+    color: inherit;
+    min-width: 0;
+    width: 100%;
+  }
+
+  textarea {
+    width: 100%;
+    overflow-x: auto;
+    resize: vertical;
+    text-align: left;
+    padding: 0.5em;
+
+    &#instructions {
+      min-height: 20em;
+    }
+  }
 }
 
 .nav-button, .tool-button {
-	background: none;
-	border: none;
-	color: inherit;
+  background: none;
+  border: none;
+  color: inherit;
 
-	&:focus {
-		outline: none;
-	}
+  &:focus {
+    outline: none;
+  }
 }
 
 .tool-button {
-	padding: 0.25em;
-	vertical-align: middle;
-	text-align: center;
+  padding: 0.25em;
+  vertical-align: middle;
+  text-align: center;
 
-	&:hover {
-		text-decoration: none;
-		background-color: $secondary-background-color;
-	}
+  &:hover {
+    text-decoration: none;
+    background-color: $secondary-background-color;
+  }
 
-	&.fa {
-		width: 1.5em;
-		height: 1.5em;
-	}
+  &.fa {
+    width: 1.5em;
+    height: 1.5em;
+  }
 
-	&:disabled {
-		opacity: 0.65;
-	}
+  &:disabled {
+    opacity: 0.65;
+  }
 }
 
 .toolbar {
-	display: flex;
-	align-items: center;
+  display: flex;
+  align-items: center;
 }
 
 .toolbar-wrapper {
-	display: flex;
-	flex-direction: row;
-}
+  display: flex;
+  flex-direction: row;
 
-.toolbar-3 {
-	flex: 1 0 5.5em;
-}
+  >.toolbar-3 {
+    flex: 1 0 5.5em;
+  }
 
-.toolbar-1 {
-	flex: 1 0 1.5em;
-}
+  >.toolbar-1 {
+    flex: 1 0 1.5em;
+  }
 
-.toolbar-center {
-	flex-grow: 2;
-}
+  >.toolbar-center {
+    flex-grow: 2;
+  }
 
-.toolbar-left {
-	justify-content: flex-start;
-}
+  >.toolbar-left {
+    justify-content: flex-start;
+  }
 
-.toolbar-right {
-	justify-content: flex-end;
-}
+  >.toolbar-right {
+    justify-content: flex-end;
+  }
 
-.toolbar-wrapper {
-	>.toolbar-left {
-		margin-left: 0.5em;
-	}
-	>.toolbar-right {
-		margin-right: 0.5em;
-	}
+  > .toolbar-left,
+  > .toolbar-right {
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+  }
 }
 
 .toolbar-center input.editable, .submit-button, .delete-recipe-button {
-	width: 100%;
+  width: 100%;
 }
 
 .button-add-section {
-	font-size: 2rem;
+  font-size: 2rem;
 }
 
 #defaults {
-	display: none;
+  display: none;
 }
 
 .recipes-list {
-	list-style: none;
-	padding: 0;
+  list-style: none;
+  padding: 0;
 
-	>li {
-		padding: 0.125rem;
-	}
+  > li {
+    padding: 0.25rem;
+  }
 }
 
 .toast {
-	background-color: $secondary-background-color;
+  background-color: $secondary-background-color;
 }
 
 #toast-submit-failed {
-	max-width: unset;
+  max-width: unset;
 }
 
 .navbar-nav {
-	flex-direction: row;
+  flex-direction: row;
 }
 
 .nav-button, .nav-link {
-	&.fa {
-		font-size: 1.5rem;
-		width: 2.5rem;
-		text-align: center;
-	}
+  &.fa {
+    font-size: 1.5rem;
+    width: 2.5rem;
+    text-align: center;
+  }
 }
 
 @mixin button-effects($color) {
-	color: color.change($color, $alpha: 0.5);
+  color: color.scale($color, $alpha: -40%);
 
-	&:disabled {
-		color: color.change($color, $alpha: 0.25);
-	}
+  &:disabled {
+    color: color.scale($color, $alpha: -75%);
+  }
 
-	&:hover:not(:disabled) {
-		color: color.change($color, $alpha: 0.75);
-	}
+  &:hover:not(:disabled) {
+    color: color.scale($color, $alpha: -25%);
+  }
 }
 
 .nav-button {
-	@include button-effects(#ffffff);
-	padding: 0.5rem 0.5rem;
+  @include button-effects(#ffffff);
+  padding: 0.5rem 0.5rem;
 }
 
 #delete-recipe-modal-button {
-	@include button-effects(#ff8c8c);
+  @include button-effects(#ff8c8c);
 }
 
 .navbar-dark .navbar-brand {
-	@include button-effects(#ffffff);
+  @include button-effects(#ffffff);
 }
 
 .modal-header, .modal-footer {
-	border-color: $secondary-background-color;
+  border-color: $secondary-background-color;
 }
 
 .text-content {
-	color: #bbb;
+  color: $text-secondary-color;
 }
