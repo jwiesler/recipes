@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"github.com/fsnotify/fsnotify"
 	"github.com/gorilla/mux"
@@ -254,22 +253,16 @@ func (ctx *RecipesContext) Authenticate(r *http.Request) bool {
 	return true
 }
 
-func AuthenticatedTokenIdentifier(r *http.Request) (Identifier, bool) {
-	if v := r.Context().Value("token-identifier"); v != nil {
-		return v.(Identifier), true
-	}
-	return DefaultIdentifier, false
-}
+type AuthenticatedHandler func(http.ResponseWriter, *http.Request, Identifier)
 
-func (ctx *RecipesContext) HandleAuthenticate(h http.Handler) http.Handler {
+func (ctx *RecipesContext) HandleAuthenticate(h AuthenticatedHandler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		identifier, ok := ctx.TokenManager.GetFromRequest(r)
 		if !ok {
 			http.Error(w, "Access denied", http.StatusForbidden)
 			return
 		}
-		c := context.WithValue(r.Context(), "token-identifier", identifier)
-		h.ServeHTTP(w, r.WithContext(c))
+		h(w, r, identifier)
 	})
 }
 
@@ -379,8 +372,7 @@ func ErrorPlaylistAlreadyExists(w http.ResponseWriter, rid string, identifier Id
 	logger.Info("A recipe with this id already exists", zap.String("id", rid), User(identifier))
 }
 
-func (ctx *RecipesContext) HandleCreateResponse(w http.ResponseWriter, r *http.Request) {
-	identifier, _ := AuthenticatedTokenIdentifier(r)
+func (ctx *RecipesContext) HandleCreateResponse(w http.ResponseWriter, r *http.Request, identifier Identifier) {
 	recipe, rid, ok := ReadRecipeRequestResponse(w, r, identifier)
 	if !ok {
 		return
@@ -417,8 +409,7 @@ func (ctx *RecipesContext) HandleEdit(w http.ResponseWriter, r *http.Request) {
 	WriteString(w, s)
 }
 
-func (ctx *RecipesContext) HandleEditResponse(w http.ResponseWriter, r *http.Request) {
-	identifier, _ := AuthenticatedTokenIdentifier(r)
+func (ctx *RecipesContext) HandleEditResponse(w http.ResponseWriter, r *http.Request, identifier Identifier) {
 	vars := mux.Vars(r)
 	oldRid := vars["recipe"]
 
@@ -442,8 +433,7 @@ func (ctx *RecipesContext) HandleEditResponse(w http.ResponseWriter, r *http.Req
 	ctx.RedirectToRecipe(w, r, rid)
 }
 
-func (ctx *RecipesContext) HandleDeleteResponse(w http.ResponseWriter, r *http.Request) {
-	identifier, _ := AuthenticatedTokenIdentifier(r)
+func (ctx *RecipesContext) HandleDeleteResponse(w http.ResponseWriter, r *http.Request, identifier Identifier) {
 	vars := mux.Vars(r)
 	rid := vars["recipe"]
 
@@ -535,9 +525,9 @@ func InitHandlers(r *mux.Router, ctx *RecipesContext) {
 	r.HandleFunc("/authentication", ctx.HandleAuthentication).Methods("GET").Schemes(scheme)
 	r.HandleFunc("/authentication/set", ctx.HandleAuthenticationSet).Methods("POST").Schemes(scheme)
 
-	r.Handle("/create", ctx.HandleAuthenticate(http.HandlerFunc(ctx.HandleCreateResponse))).Methods("POST").Schemes(scheme)
-	r.Handle("/delete/{recipe}", ctx.HandleAuthenticate(http.HandlerFunc(ctx.HandleDeleteResponse))).Methods("POST").Schemes(scheme)
-	r.Handle("/edit/{recipe}", ctx.HandleAuthenticate(http.HandlerFunc(ctx.HandleEditResponse))).Methods("POST").Schemes(scheme)
+	r.Handle("/create", ctx.HandleAuthenticate(ctx.HandleCreateResponse)).Methods("POST").Schemes(scheme)
+	r.Handle("/delete/{recipe}", ctx.HandleAuthenticate(ctx.HandleDeleteResponse)).Methods("POST").Schemes(scheme)
+	r.Handle("/edit/{recipe}", ctx.HandleAuthenticate(ctx.HandleEditResponse)).Methods("POST").Schemes(scheme)
 
 	fs := http.FileServer(http.Dir("static/"))
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs)).Methods("GET").Schemes(scheme)
