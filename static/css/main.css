@@ -50,7 +50,7 @@
   margin-right: 0;
 }
 
-body {
+body, .modal-content {
   background-color: #242424;
 }
 
@@ -160,30 +160,41 @@ body {
   padding: 0.5em 0.5em 0.5em 0.25em;
 }
 
-.editable .ingredient-amount, .editable .ingredient-name {
-  display: flex;
-  align-items: center;
+input[type=number].remove-number-arrows {
+  -moz-appearance: textfield;
 }
-.editable .ingredient-unit-input {
-  flex-basis: 4.3em;
-  min-width: 0;
+
+input::-webkit-outer-spin-button.remove-number-arrows,
+input::-webkit-inner-spin-button.remove-number-arrows {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+#scale-ingredient-wrapper {
+  display: flex;
+  text-align: left;
+}
+
+#scale-ingredient-amount {
+  flex-basis: 5em;
+  flex-grow: 0;
   flex-shrink: 0;
 }
-.editable .ingredient-amount-input {
-  flex-basis: 4em;
-  min-width: 0;
-  flex-grow: 1;
-}
-.editable .ingredient-name-input {
-  width: 100%;
-}
-.editable input:hover {
+
+input:hover {
   color: aliceblue;
 }
-.editable input {
+
+input, select, button {
   border-radius: 0.25em;
 }
-.editable input, .editable textarea {
+
+select option {
+  background-color: #2f2f2f;
+  color: inherit;
+}
+
+input, textarea, select {
   border: 1px solid #2f2f2f;
   padding: 0.2em 0.5em;
   text-align: inherit;
@@ -192,24 +203,49 @@ body {
   min-width: 0;
   width: 100%;
 }
-.editable textarea {
+
+textarea {
   width: 100%;
   overflow-x: auto;
   resize: vertical;
   text-align: left;
   padding: 0.5em;
 }
-.editable textarea#instructions {
+textarea#instructions {
   min-height: 20em;
 }
 
-.nav-button, .tool-button {
+.editable .ingredient-amount, .editable .ingredient-name {
+  display: flex;
+  align-items: center;
+}
+.editable .ingredient-unit-input {
+  flex-basis: 4.3em;
+  flex-shrink: 0;
+}
+.editable .ingredient-amount-input {
+  flex-basis: 4em;
+  flex-grow: 1;
+}
+.editable .ingredient-name-input {
+  width: 100%;
+}
+
+.nav-button, .tool-button, .text-button {
   background: none;
   border: none;
   color: inherit;
 }
-.nav-button:focus, .tool-button:focus {
+.nav-button:focus, .tool-button:focus, .text-button:focus {
   outline: none;
+}
+
+.text-button {
+  border: 1px solid #2f2f2f;
+  background-color: #2f2f2f;
+}
+.text-button:hover {
+  background-color: #393939;
 }
 
 .tool-button {
@@ -263,7 +299,7 @@ body {
   width: 100%;
 }
 
-.button-add-section {
+#button-add-section {
   font-size: 2rem;
 }
 

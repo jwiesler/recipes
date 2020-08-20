@@ -1,40 +1,3 @@
-function createInitialState(root) {
-    return {
-        ingredients: root.find(".ingredients-sections").first(),
-        descriptionInput: root.find("#description")[0],
-        instructionsInput: root.find("#instructions")[0],
-        titleInput: root.find("#name")[0],
-        sourceInput: root.find("#source")[0],
-        findSections: function() {
-            return this.ingredients.children("div")
-        }
-    }
-}
-
-function moveUp(a) {
-    if(!a.previousSibling)
-        return
-    a.parentNode.insertBefore(a, a.previousSibling)
-}
-
-function moveDown(a) {
-    if(!a.nextSibling)
-        return
-    a.parentNode.insertBefore(a.nextSibling, a)
-}
-
-function getIngredientsTable(section) {
-    return section.children(".ingredients-table").first()
-}
-
-function getIngredientsOfSection(section) {
-    return getIngredientsTable(section).children()
-}
-
-function removeNode(n) {
-    n.parentNode.removeChild(n)
-}
-
 function initToolbar(node, toolbar) {
     const deleteButton = toolbar.find(".button-delete").first()
     const upButton = toolbar.find(".button-up").first()
@@ -59,7 +22,7 @@ function extendRow(row) {
     }
 }
 
-function initListersForRow(row) {
+function initListenersForRow(row) {
     const jrow = $(row)
     initToolbar(row, jrow)
 }
@@ -71,16 +34,8 @@ function addRowToTable(table) {
     const e = defaultRow.cloneNode(true)
     table.appendChild(e)
     extendRow(e)
-    initListersForRow(e)
+    initListenersForRow(e)
     return e
-}
-
-function extendSection(section) {
-    section.ingredientsTable = $(section).children(".ingredients-table").first()[0]
-    section.ingredients = function() {
-        return this.ingredientsTable.childNodes
-    }
-    section.headingInput = $(section).find(".ingredients-section-name-input")[0]
 }
 
 function initSection(section, defaultRow, importInformation) {
@@ -95,33 +50,14 @@ function initSection(section, defaultRow, importInformation) {
         importInformation.modal.modal("show")
     })
 
-    getIngredientsOfSection(jsection).each(function(i, row) {
+    section.ingredients().forEach(function(row) {
         extendRow(row)
-        initListersForRow(row)
+        initListenersForRow(row)
     })
     const addButton = jsection.find(".button-add").first()
-    const table = getIngredientsTable(jsection)[0]
     addButton.click(function() {
-        addRowToTable(table)
+        addRowToTable(section.ingredientsTable)
     })
-}
-
-function doRedirect(xhr) {
-    console.assert(xhr.responseURL)
-    if(xhr.responseURL)
-        window.location.href = xhr.responseURL
-}
-
-function XHRResultHandler(xhr, success, failure) {
-    return function() {
-        if(xhr.readyState !== 4)
-            return
-        if(xhr.status !== 200) {
-            failure(xhr)
-        } else {
-            success(xhr)
-        }
-    }
 }
 
 function createRequestForButton(b, async) {
@@ -189,9 +125,7 @@ function initIngredientsImport(importInformation) {
 }
 
 $(function() {
-    const form = $("#recipe-edit-form")[0]
-    console.assert(form)
-    const info = createInitialState($(form))
+    const info = createInitialState()
     defaultRow = $("#default-row")[0].firstChild
     defaultSection = $("#default-section")[0].firstChild
     console.assert(defaultRow && defaultSection)
@@ -213,10 +147,10 @@ $(function() {
 
     initIngredientsImport(importInformation)
 
-    const addButton = $(form).find(".button-add-section")
+    const addButton = $("#button-add-section")
     addButton.click(function() {
         const e = defaultSection.cloneNode(true)
-        info.ingredients[0].appendChild(e)
+        info.ingredients.appendChild(e)
         initSection(e, defaultRow, importInformation)
     })
 
@@ -224,12 +158,15 @@ $(function() {
     const errorToastContent = errorToast.find(".toast-body")[0]
     const submitButton = $("#submit-recipe-button")[0]
     const deleteButton = $("#delete-recipe-button")[0]
+    const deleteModalButton = $("#delete-recipe-modal-button")[0]
     console.assert(submitButton)
 
-    function setButtons(enabled) {
-        submitButton.enabled = enabled
-        if(deleteButton)
-            deleteButton.enabled = false
+    function setButtonsDisabled(disabled) {
+        submitButton.disabled = disabled
+        if(deleteButton) {
+            deleteButton.disabled = disabled
+            deleteModalButton.disabled = disabled
+        }
     }
 
     function serverError(xhr) {
@@ -238,23 +175,22 @@ $(function() {
         errorToast.toast("dispose")
         errorToast.toast("show")
         console.error("Failed with status code " + xhr.status + " (" + xhr.statusText + "): " + text)
-        setButtons(true)
+        setButtonsDisabled(false)
     }
 
     function saveRecipe() {
-        const title = info.titleInput.value
-        const description = info.descriptionInput.value
-        const instructions = info.instructionsInput.value
-        const source = info.sourceInput.value
+        const title = info.title.value
+        const description = info.description.value
+        const instructions = info.instructions.value
+        const source = info.source.value
         const sections = info.findSections()
         const resArray = new Array(sections.length)
         const image = $("#image").attr("src")
         for (let i = 0; i < sections.length; i++) {
             const section = sections[i]
-            const sec = $(sections[i])
             const heading = section.headingInput.value
 
-            const tableRows = getIngredientsOfSection(sec)
+            const tableRows = section.ingredients()
             const ingredientsArray = new Array(tableRows.length)
             for (let j = 0; j < tableRows.length; j++) {
                 const row = tableRows[j]
@@ -287,19 +223,16 @@ $(function() {
     }
 
     submitButton.addEventListener("click", function() {
-        setButtons(false)
+        setButtonsDisabled(true)
         saveRecipe()
     })
 
     if(deleteButton) {
         deleteButton.addEventListener("click", function () {
-            setButtons(false)
+            setButtonsDisabled(true)
             const xhr = createRequestForButton(deleteButton, true)
             xhr.onreadystatechange = XHRResultHandler(xhr, doRedirect, serverError)
             xhr.send()
         })
     }
-    form.addEventListener("submit", function(e) {
-        e.preventDefault()
-    })
 })

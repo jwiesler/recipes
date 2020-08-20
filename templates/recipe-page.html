@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <head>
     {{ template "head.html" . }}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" crossorigin="anonymous"></script>
+    <script src="{{ .BaseUrl }}/static/js/base.js"></script>
+    <script src="{{ .BaseUrl }}/static/js/recipe.js"></script>
 </head>
 <body>
     {{ template "navbar.html" (dict "Type" "recipe" "BaseUrl" .BaseUrl "Id" .Id) }}
@@ -18,7 +21,15 @@
             {{ with .Recipe.IngredientsSections }}
                 <div class="spacing-between">
                     <h2>Zutaten</h2>
-                    <div class="ingredients-sections spacing-between">
+                    <div class="spacing-between-small">
+                        <p>Zutaten skalieren</p>
+                        <div id="scale-ingredient-wrapper" class="vspace-between-small">
+                            <input id="scale-ingredient-amount" class="remove-number-arrows" type="number" min="0" step="0.001" placeholder="Menge" />
+                            <select id="scale-ingredient-select"></select>
+                            <button id="scale-ingredient-button" class="text-button">Skalieren</button>
+                        </div>
+                    </div>
+                    <div id="ingredients-sections" class="spacing-between">
                         {{- range . -}}
                             <div class="ingredients-section">
                                 {{- if .Heading -}}
@@ -26,7 +37,7 @@
                                 {{- end -}}
                                 <div class="ingredients-table text-content">
                                     {{- range .Ingredients -}}
-                                        <div class="ingredients-row-wrapper"><span class="ingredient-amount"><span>{{- .Amount -}}</span>{{ if unitNeedsSpace .Unit }} {{ end }}<span>
+                                        <div class="ingredients-row-wrapper"><span class="ingredient-amount"><span class="ingredient-amount-number">{{- .Amount -}}</span>{{ if unitNeedsSpace .Unit }} {{ end }}<span class="ingredient-amount-unit">
                                                     {{- if .Unit }}{{ .Unit }}{{ end -}}</span></span><span class="ingredient-name">
                                                 {{- .Name -}}
                                             </span></div>

@@ -2,7 +2,6 @@
 
 $background-color: color.scale(#ffffff, $lightness: -86%); // #222
 $secondary-background-color: color.scale($background-color, $lightness: 5%);
-$tertiary-background-color: color.scale($background-color, $lightness: -5%);
 $border-color: $secondary-background-color;
 
 $text-primary-color: #ffffff;
@@ -92,7 +91,7 @@ $spacing-s: 0.5rem;
   }
 }
 
-body {
+body, .modal-content {
   background-color: $background-color;
 }
 
@@ -228,6 +227,62 @@ body {
   }
 }
 
+input[type=number].remove-number-arrows {
+  -moz-appearance: textfield;
+}
+
+input::-webkit-outer-spin-button.remove-number-arrows,
+input::-webkit-inner-spin-button.remove-number-arrows {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+#scale-ingredient-wrapper {
+  display: flex;
+  text-align: left;
+}
+
+#scale-ingredient-amount {
+  flex-basis: 5em;
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+
+input:hover {
+  color: aliceblue;
+}
+
+input, select, button {
+  border-radius: 0.25em;
+}
+
+select option {
+  background-color: $secondary-background-color;
+  color: inherit;
+}
+
+input, textarea, select {
+  border: 1px solid $secondary-background-color;
+  padding: 0.2em 0.5em;
+  text-align: inherit;
+  background-color: inherit;
+  color: inherit;
+  min-width: 0;
+  width: 100%;
+}
+
+textarea {
+  width: 100%;
+  overflow-x: auto;
+  resize: vertical;
+  text-align: left;
+  padding: 0.5em;
+
+  &#instructions {
+    min-height: 20em;
+  }
+}
+
 .editable {
   .ingredient-amount, .ingredient-name {
     display: flex;
@@ -236,58 +291,35 @@ body {
 
   .ingredient-unit-input {
     flex-basis: 4.3em;
-    min-width: 0;
     flex-shrink: 0;
   }
 
   .ingredient-amount-input {
     flex-basis: 4em;
-    min-width: 0;
     flex-grow: 1;
   }
 
   .ingredient-name-input {
     width: 100%;
   }
-
-  input:hover {
-    color: aliceblue;
-  }
-
-  input {
-    border-radius: 0.25em;
-  }
-
-  input, textarea {
-    border: 1px solid $secondary-background-color;
-    padding: 0.2em 0.5em;
-    text-align: inherit;
-    background-color: inherit;
-    color: inherit;
-    min-width: 0;
-    width: 100%;
-  }
-
-  textarea {
-    width: 100%;
-    overflow-x: auto;
-    resize: vertical;
-    text-align: left;
-    padding: 0.5em;
-
-    &#instructions {
-      min-height: 20em;
-    }
-  }
 }
 
-.nav-button, .tool-button {
+.nav-button, .tool-button, .text-button {
   background: none;
   border: none;
   color: inherit;
 
   &:focus {
     outline: none;
+  }
+}
+
+.text-button {
+  border: 1px solid $border-color;
+  background-color: $secondary-background-color;
+
+  &:hover {
+    background-color: color.scale($secondary-background-color, $lightness: 5%);;
   }
 }
 
@@ -351,7 +383,7 @@ body {
   width: 100%;
 }
 
-.button-add-section {
+#button-add-section {
   font-size: 2rem;
 }
 

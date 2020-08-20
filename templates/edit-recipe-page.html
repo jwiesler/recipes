@@ -33,6 +33,7 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" crossorigin="anonymous"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
 	<script src="{{ .BaseUrl }}/static/bootstrap-4.5.2/js/bootstrap.min.js" crossorigin="anonymous"></script>
+    <script src="{{ .BaseUrl }}/static/js/base.js"></script>
     <script src="{{ .BaseUrl }}/static/js/edit.js"></script>
 </head>
 <body>
@@ -55,14 +56,14 @@
 
                     <div id="ingredients" class="spacing-between">
                         <h2>Zutaten</h2>
-                        <div class="ingredients-sections spacing-between">
+                        <div id="ingredients-sections" class="spacing-between">
                         {{- if .Recipe -}}
                             {{- range .Recipe.IngredientsSections -}}
                                 {{ template "ingredients-section" (dict "Heading" .Heading "Ingredients" .Ingredients) }}
                             {{- end -}}
                         {{- end -}}
                         </div>
-                        <div><button tabindex="-1" class="tool-button button-add-section fa fa-plus"></button></div>
+                        <div><button id="button-add-section" tabindex="-1" class="tool-button fa fa-plus"></button></div>
                     </div>
 
                     <div class="spacing-between-small">
