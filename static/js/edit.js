@@ -150,7 +150,7 @@ $(function() {
     const addButton = $("#button-add-section")
     addButton.click(function() {
         const e = defaultSection.cloneNode(true)
-        info.ingredients.appendChild(e)
+        info.ingredientsSections.appendChild(e)
         initSection(e, defaultRow, importInformation)
     })
 

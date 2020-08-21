@@ -60,6 +60,9 @@ $(function() {
     const validRows = []
     const info = createInitialState()
 
+    if(!info.ingredients)
+        return
+
     scanIngredients(info, ingredientInfos, validRows)
 
     function scaleAllByFactor(factor) {

@@ -42,13 +42,14 @@ function moveDown(a) {
 
 function createInitialState() {
     return {
-        ingredients: $("#ingredients-sections")[0],
+        ingredients: $("#ingredients")[0],
+        ingredientsSections: $("#ingredients-sections")[0],
         description: $("#description")[0],
         instructions: $("#instructions")[0],
         title: $("#name")[0],
         source: $("#source")[0],
         findSections: function() {
-            return $(this.ingredients).children("div")
+            return $(this.ingredientsSections).children("div")
         }
     }
 }
