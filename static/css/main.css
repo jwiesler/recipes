@@ -372,4 +372,8 @@ textarea#instructions {
   color: #ededed;
 }
 
+.text-block {
+  text-align: justify;
+}
+
 /*# sourceMappingURL=main.css.map */
