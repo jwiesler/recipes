@@ -79,9 +79,9 @@ $(function() {
         scaleAllByFactor(factor)
     }
 
-    const scaleIngredientAmountInput = $("#scale-ingredient-amount")[0]
-    const scaleIngredientButton = $("#scale-ingredient-button")[0]
-    const scaleIngredientSelect = $("#scale-ingredient-select")[0]
+    const scaleIngredientAmountInput = document.getElementById("scale-ingredient-amount")
+    const scaleIngredientButton = document.getElementById("scale-ingredient-button")
+    const scaleIngredientSelect = document.getElementById("scale-ingredient-select")
 
     scaleIngredientButton.addEventListener("click", function() {
         const name = scaleIngredientSelect.value

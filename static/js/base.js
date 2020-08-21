@@ -1,9 +1,10 @@
 function extendSection(section) {
-    section.ingredientsTable = $(section).children(".ingredients-table").first()[0]
+    const jsection = $(section)
+    section.ingredientsTable = jsection.children(".ingredients-table").first()[0]
     section.ingredients = function() {
         return this.ingredientsTable.childNodes
     }
-    section.headingInput = $(section).find(".ingredients-section-name-input")[0]
+    section.headingInput = jsection.find(".ingredients-section-name-input")[0]
 }
 
 function doRedirect(xhr) {
@@ -42,12 +43,12 @@ function moveDown(a) {
 
 function createInitialState() {
     return {
-        ingredients: $("#ingredients")[0],
-        ingredientsSections: $("#ingredients-sections")[0],
-        description: $("#description")[0],
-        instructions: $("#instructions")[0],
-        title: $("#name")[0],
-        source: $("#source")[0],
+        ingredients: document.getElementById("ingredients"),
+        ingredientsSections: document.getElementById("ingredients-sections"),
+        description: document.getElementById("description"),
+        instructions: document.getElementById("instructions"),
+        title: document.getElementById("name"),
+        source: document.getElementById("source"),
         findSections: function() {
             return $(this.ingredientsSections).children("div")
         }

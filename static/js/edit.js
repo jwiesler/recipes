@@ -74,7 +74,7 @@ function parseIngredients(text) {
     const lines = text.split("\n")
     const ingredients = new Array(lines.length)
     let off = 0
-    for (let i = 0; i < lines.length; i++) {
+    for(let i = 0; i < lines.length; i++) {
         const line = lines[i]
         const arr = line.split(/\s+/, 3)
         if(arr.length === 0)
@@ -112,7 +112,7 @@ function initIngredientsImport(importInformation) {
 
         const targetSection = importInformation.targetSection
         const table = targetSection.ingredientsTable
-        for (let i = 0; i < ingredients.length; i++) {
+        for(let i = 0; i < ingredients.length; i++) {
             const ingredient = ingredients[i]
             const row = addRowToTable(table)
             row.ingredient.nameInput.value = ingredient.name
@@ -126,14 +126,14 @@ function initIngredientsImport(importInformation) {
 
 $(function() {
     const info = createInitialState()
-    defaultRow = $("#default-row")[0].firstChild
-    defaultSection = $("#default-section")[0].firstChild
+    defaultRow = document.getElementById("default-row").firstChild
+    defaultSection = document.getElementById("default-section").firstChild
     console.assert(defaultRow && defaultSection)
 
     const importInformation = {
-        importButton: $("#import-ingredients-text-button")[0],
-        textArea: $("#import-ingredients-text-area")[0],
-        modal: $("#import-ingredients-text-modal"),
+        importButton: document.getElementById("import-ingredients-text-button"),
+        textArea: document.getElementById("import-ingredients-text-area"),
+        modal: $(document.getElementById("import-ingredients-text-modal")),
         targetSection: null,
         reset: function() {
             this.textArea.value = ""
@@ -147,18 +147,18 @@ $(function() {
 
     initIngredientsImport(importInformation)
 
-    const addButton = $("#button-add-section")
-    addButton.click(function() {
+    const addButton = document.getElementById("button-add-section")
+    addButton.addEventListener("click", function() {
         const e = defaultSection.cloneNode(true)
         info.ingredientsSections.appendChild(e)
         initSection(e, defaultRow, importInformation)
     })
 
-    const errorToast = $("#toast-submit-failed")
+    const errorToast = $(document.getElementById("toast-submit-failed"))
     const errorToastContent = errorToast.find(".toast-body")[0]
-    const submitButton = $("#submit-recipe-button")[0]
-    const deleteButton = $("#delete-recipe-button")[0]
-    const deleteModalButton = $("#delete-recipe-modal-button")[0]
+    const submitButton = document.getElementById("submit-recipe-button")
+    const deleteButton = document.getElementById("delete-recipe-button")
+    const deleteModalButton = document.getElementById("delete-recipe-modal-button")
     console.assert(submitButton)
 
     function setButtonsDisabled(disabled) {
@@ -185,14 +185,14 @@ $(function() {
         const source = info.source.value
         const sections = info.findSections()
         const resArray = new Array(sections.length)
-        const image = $("#image").attr("src")
-        for (let i = 0; i < sections.length; i++) {
+        const image = document.getElementById("image").getAttribute("src")
+        for(let i = 0; i < sections.length; i++) {
             const section = sections[i]
             const heading = section.headingInput.value
 
             const tableRows = section.ingredients()
             const ingredientsArray = new Array(tableRows.length)
-            for (let j = 0; j < tableRows.length; j++) {
+            for(let j = 0; j < tableRows.length; j++) {
                 const row = tableRows[j]
 
                 ingredientsArray[j] = {
@@ -228,7 +228,7 @@ $(function() {
     })
 
     if(deleteButton) {
-        deleteButton.addEventListener("click", function () {
+        deleteButton.addEventListener("click", function() {
             setButtonsDisabled(true)
             const xhr = createRequestForButton(deleteButton, true)
             xhr.onreadystatechange = XHRResultHandler(xhr, doRedirect, serverError)
