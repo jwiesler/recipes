@@ -186,7 +186,7 @@ $(function() {
         const sections = info.findSections()
         const resArray = new Array(sections.length)
         const imageElement = document.getElementById("image")
-        const image = imageElement === undefined ? "" : imageElement.getAttribute("src")
+        const image = imageElement ? imageElement.getAttribute("src") : ""
         for(let i = 0; i < sections.length; i++) {
             const section = sections[i]
             const heading = section.headingInput.value
