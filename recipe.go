@@ -6,6 +6,8 @@ import (
 	"github.com/microcosm-cc/bluemonday"
 	"html/template"
 	"io/ioutil"
+	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -29,11 +31,23 @@ type RawRecipe struct {
 	Source              string
 }
 
+type IngredientSummaryKey struct {
+	Name string
+	Unit string
+}
+
+type IngredientSummary struct {
+	Name string
+	Unit string
+	Amount float64
+}
+
 type BakedRecipe struct {
 	Name                string
 	ImagePath           string
 	Description         string
 	IngredientsSections []IngredientsSection
+	IngredientSummaries []IngredientSummary
 	Instructions        template.HTML
 	Source              template.HTML
 }
@@ -63,12 +77,67 @@ func BakeString(s string) template.HTML {
 	return template.HTML(policy.SanitizeBytes(markdown.ToHTML([]byte(s), nil, nil)))
 }
 
+type ingredientSummariesSorter []IngredientSummary
+
+func (s ingredientSummariesSorter) Len() int {
+	return len(s)
+}
+
+func (s ingredientSummariesSorter) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s ingredientSummariesSorter) Less(i, j int) bool {
+	if s[i].Name < s[j].Name {
+		return true
+	} else if s[i].Name > s[j].Name {
+		return false
+	} else {
+		return s[i].Unit < s[j].Unit
+	}
+}
+
+func MakeIngredientSummaries(sections []IngredientsSection) []IngredientSummary {
+	ingredients := make(map[IngredientSummaryKey]*IngredientSummary)
+	for _, section := range sections {
+		for _, ingredient := range section.Ingredients {
+			amount, err := strconv.ParseFloat(ingredient.Amount, 64)
+			if err != nil {
+				continue
+			}
+
+			key := IngredientSummaryKey{
+				Name: ingredient.Name,
+				Unit: ingredient.Unit,
+			}
+
+			if i, ok := ingredients[key]; ok {
+				i.Amount += amount
+			} else {
+				ingredients[key] = &IngredientSummary{
+					Name: ingredient.Name,
+					Unit: ingredient.Unit,
+					Amount: amount,
+				}
+			}
+		}
+	}
+
+	res := make([]IngredientSummary, 0, len(ingredients))
+	for _, in := range ingredients {
+		res = append(res, *in)
+	}
+	sort.Sort(ingredientSummariesSorter(res))
+	return res
+}
+
 func (r *RawRecipe) BakeRecipe() *BakedRecipe {
 	return &BakedRecipe{
 		Name:                r.Name,
 		ImagePath:           r.ImagePath,
 		Description:         r.Description,
 		IngredientsSections: r.IngredientsSections,
+		IngredientSummaries: MakeIngredientSummaries(r.IngredientsSections),
 		Instructions:        BakeString(r.Instructions),
 		Source:              BakeString(r.Source),
 	}

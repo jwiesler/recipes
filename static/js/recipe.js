@@ -22,48 +22,29 @@ function createIngredientInfo(name, unit) {
     }
 }
 
-function scanIngredients(info, ingredientInfos, validRows) {
+function scanIngredients(info, validRows) {
     info.findSections().each(function(i, section) {
         extendSection(section)
         section.ingredients().forEach(function(row) {
             extendRow(row)
-
-            const ingredient = row.ingredient
-            const amount = ingredient.parseAmount()
+            const amount = row.ingredient.originalAmount
             const amountValid = !isNaN(amount)
             if(!amountValid)
                 return
 
-            const key = makeIngredientKey(ingredient)
-            let ingredientInfo = ingredientInfos.get(key)
-            if(ingredientInfo === undefined) {
-                ingredientInfo = createIngredientInfo(ingredient.name, ingredient.unit)
-                ingredientInfos.set(key, ingredientInfo)
-            }
-
-            ingredientInfo.amount += amount
             validRows.push(row)
         })
     })
 }
 
-function makeIngredientKey(ingredient) {
-    let text = ingredient.name
-    if(ingredient.unit) {
-        text += " (" + ingredient.unit + ")"
-    }
-    return text
-}
-
 $(function() {
-    const ingredientInfos = new Map()
     const validRows = []
     const info = createInitialState()
 
     if(!info.ingredients)
         return
 
-    scanIngredients(info, ingredientInfos, validRows)
+    scanIngredients(info, validRows)
 
     function scaleAllByFactor(factor) {
         validRows.forEach(function(row) {
@@ -71,28 +52,23 @@ $(function() {
         })
     }
 
-    function scaleIngredient(ingredient, amount) {
-        const ingredientInfo = ingredientInfos.get(ingredient)
-        if(ingredientInfo === undefined)
-            return
-        const factor = amount / ingredientInfo.amount
-        scaleAllByFactor(factor)
-    }
-
     const scaleIngredientAmountInput = document.getElementById("scale-ingredient-amount")
     const scaleIngredientButton = document.getElementById("scale-ingredient-button")
     const scaleIngredientSelect = document.getElementById("scale-ingredient-select")
 
     scaleIngredientButton.addEventListener("click", function() {
-        const name = scaleIngredientSelect.value
-        const amount = scaleIngredientAmountInput.value
-        if(!name || !amount)
+        const index = scaleIngredientSelect.selectedIndex
+        if(index === -1)
             return
-        scaleIngredient(name, amount)
-    })
+        if(!scaleIngredientAmountInput.validity.valid)
+            return
 
-    const ingredients = Array.from(ingredientInfos.keys()).sort()
-    ingredients.forEach(function(k) {
-        scaleIngredientSelect.appendChild(new Option(k, k))
+        const amount = scaleIngredientAmountInput.value
+        const option = scaleIngredientSelect.options[index]
+        const totalAmount = option.getAttribute("data-total-amount")
+        const factor = amount / totalAmount
+        if(isNaN(factor))
+            return
+        scaleAllByFactor(factor)
     })
 })

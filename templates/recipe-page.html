@@ -18,17 +18,21 @@
                     <div><img class="parent-sized" src="{{ .Recipe.ImagePath }}"/></div>
                 {{- end -}}
             </div>
-            {{ with .Recipe.IngredientsSections }}
+            {{ if .Recipe.IngredientsSections }}
                 <div id="ingredients" class="spacing-between">
                     <h2>Zutaten</h2>
                     <div class="spacing-between-small">
                         <p>Zutaten skalieren</p>
                         <div id="scale-ingredient-wrapper" class="vspace-between-small">
-                            <input id="scale-ingredient-amount" class="remove-number-arrows" type="number" min="0" step="0.001" placeholder="Menge" /><select id="scale-ingredient-select"></select><button id="scale-ingredient-button" class="text-button">Skalieren</button>
+                            <input id="scale-ingredient-amount" class="remove-number-arrows" type="number" min="0" step="0.001" placeholder="Menge" /><select id="scale-ingredient-select">
+                                {{- range .Recipe.IngredientSummaries -}}
+                                    <option data-total-amount="{{ .Amount }}">{{ .Name }}{{ if .Unit }} ({{ .Unit }}){{ end }}</option>
+                                {{- end -}}
+                            </select><button id="scale-ingredient-button" class="text-button">Skalieren</button>
                         </div>
                     </div>
                     <div id="ingredients-sections" class="spacing-between">
-                        {{- range . -}}
+                        {{- range .Recipe.IngredientsSections -}}
                             <div class="ingredients-section">
                                 {{- if .Heading -}}
                                     <h4>{{ .Heading }}</h4>
