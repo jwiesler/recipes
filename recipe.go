@@ -40,6 +40,7 @@ type IngredientSummary struct {
 	Name string
 	Unit string
 	Amount float64
+	RecipeOffset int
 }
 
 type BakedRecipe struct {
@@ -88,13 +89,7 @@ func (s ingredientSummariesSorter) Swap(i, j int) {
 }
 
 func (s ingredientSummariesSorter) Less(i, j int) bool {
-	if s[i].Name < s[j].Name {
-		return true
-	} else if s[i].Name > s[j].Name {
-		return false
-	} else {
-		return s[i].Unit < s[j].Unit
-	}
+	return s[i].RecipeOffset < s[j].RecipeOffset
 }
 
 func MakeIngredientSummaries(sections []IngredientsSection) []IngredientSummary {
@@ -118,6 +113,7 @@ func MakeIngredientSummaries(sections []IngredientsSection) []IngredientSummary 
 					Name: ingredient.Name,
 					Unit: ingredient.Unit,
 					Amount: amount,
+					RecipeOffset: len(ingredients),
 				}
 			}
 		}
