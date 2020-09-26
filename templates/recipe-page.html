@@ -21,16 +21,18 @@
             {{ if .Recipe.IngredientsSections }}
                 <div id="ingredients" class="spacing-between">
                     <h2>Zutaten</h2>
+                    {{ with .Recipe.IngredientSummaries }}
                     <div class="spacing-between-small">
                         <p>Zutaten skalieren</p>
                         <div id="scale-ingredient-wrapper" class="vspace-between-small">
                             <input id="scale-ingredient-amount" class="remove-number-arrows" type="number" min="0" step="0.001" placeholder="Menge" /><select id="scale-ingredient-select">
-                                {{- range .Recipe.IngredientSummaries -}}
+                                {{- range . -}}
                                     <option data-total-amount="{{ .Amount }}">{{ .Name }}{{ if .Unit }} ({{ .Unit }}){{ end }}</option>
                                 {{- end -}}
                             </select><button id="scale-ingredient-button" class="text-button">Skalieren</button>
                         </div>
                     </div>
+                    {{ end }}
                     <div id="ingredients-sections" class="spacing-between">
                         {{- range .Recipe.IngredientsSections -}}
                             <div class="ingredients-section">
@@ -40,7 +42,7 @@
                                 <div class="ingredients-table text-content">
                                     {{- range .Ingredients -}}
                                         <div class="ingredients-row-wrapper"><span class="ingredient-amount"><span class="ingredient-amount-number">{{- .Amount -}}</span>{{ if unitNeedsSpace .Unit }} {{ end }}<span class="ingredient-amount-unit">
-                                                    {{- if .Unit }}{{ .Unit }}{{ end -}}</span></span><span class="ingredient-name">
+                                                    {{- if .Unit }}{{ .Unit }}{{ end -}}</span> </span><span class="ingredient-name">
                                                 {{- .Name -}}
                                             </span></div>
                                     {{- end -}}
