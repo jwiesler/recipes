@@ -70,13 +70,31 @@ function createRequestForButton(b, async) {
     return xhr
 }
 
+function splitAtMostNParts(str, pattern, n) {
+    let res = [];
+    while(str.length !== 0) {
+        if(n === 1)
+            break;
+
+        --n;
+        let match = str.match(pattern);
+        if(match === null)
+            break;
+
+        res.push(str.substr(0, match.index));
+        str = str.substr(match.index + match[0].length);
+    }
+    res.push(str);
+    return res;
+}
+
 function parseIngredients(text) {
     const lines = text.split("\n")
     const ingredients = new Array(lines.length)
     let off = 0
     for(let i = 0; i < lines.length; i++) {
         const line = lines[i]
-        const arr = line.split(/\s+/, 3)
+        const arr = splitAtMostNParts(line, /\s+/, 3)
         if(arr.length === 0)
             continue;
 
