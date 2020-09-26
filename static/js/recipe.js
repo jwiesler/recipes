@@ -60,10 +60,10 @@ $(function() {
         const index = scaleIngredientSelect.selectedIndex
         if(index === -1)
             return
-        if(!scaleIngredientAmountInput.validity.valid)
+        const amount = scaleIngredientAmountInput.value
+        if(!amount || !scaleIngredientAmountInput.validity.valid)
             return
 
-        const amount = scaleIngredientAmountInput.value
         const option = scaleIngredientSelect.options[index]
         const totalAmount = option.getAttribute("data-total-amount")
         const factor = amount / totalAmount
