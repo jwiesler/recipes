@@ -146,7 +146,7 @@ func (r *RawRecipe) Clean() {
 		section.Heading = strings.TrimSpace(section.Heading)
 		for _, ingredient := range section.Ingredients {
 			ingredient.Name = strings.TrimSpace(ingredient.Name)
-			ingredient.Unit = strings.TrimSpace(ingredient.Unit)
+			ingredient.Unit = strings.ReplaceAll(strings.TrimSpace(ingredient.Unit), ",", ".")
 			ingredient.Amount = strings.TrimSpace(ingredient.Amount)
 		}
 	}
