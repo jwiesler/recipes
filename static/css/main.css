@@ -376,4 +376,8 @@ textarea#instructions {
   text-align: justify;
 }
 
+#recipe-edit-form .h1, #recipe-edit-form .h2, #recipe-edit-form .h3, #recipe-edit-form .h4, #recipe-edit-form .h5, #recipe-edit-form .h6 {
+  text-transform: initial;
+}
+
 /*# sourceMappingURL=main.css.map */
