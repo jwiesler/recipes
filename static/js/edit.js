@@ -88,37 +88,39 @@ function splitAtMostNParts(str, pattern, n) {
     return res;
 }
 
+function ingredientsFromInput(input) {
+    const arr = splitAtMostNParts(input, /\s+/, 3);
+    if(arr.length === 0)
+        return null;
+    const hasNumber = arr[0].match(/\d/) != null;
+    if(arr.length === 1 || !hasNumber) {
+        return {
+            amount: "",
+            unit: "",
+            name: input,
+        }
+    } else if(arr.length === 2) {
+        return {
+            amount: arr[0],
+            unit: "",
+            name: arr[1],
+        }
+    } else {
+        return {
+            amount: arr[0],
+            unit: arr[1],
+            name: arr[2],
+        }
+    }
+}
+
 function parseIngredients(text) {
     const lines = text.split("\n")
     const ingredients = new Array(lines.length)
     let off = 0
     for(let i = 0; i < lines.length; i++) {
-        const line = lines[i]
-        const arr = splitAtMostNParts(line, /\s+/, 3)
-        if(arr.length === 0)
-            continue;
-
-        let ingredient;
-        if(arr.length === 1) {
-            ingredient = {
-                amount: "",
-                unit: "",
-                name: arr[0],
-            }
-        } else if(arr.length === 2) {
-            ingredient = {
-                amount: arr[0],
-                unit: "",
-                name: arr[1],
-            }
-        } else {
-            ingredient = {
-                amount: arr[0],
-                unit: arr[1],
-                name: arr[2],
-            }
-        }
-        ingredients[off++] = ingredient
+        const line = lines[i].trim();
+        ingredients[off++] = ingredientsFromInput(line);
     }
     return ingredients.slice(0, off)
 }
