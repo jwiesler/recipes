@@ -88,9 +88,9 @@ function splitAtMostNParts(str, pattern, n) {
     return res;
 }
 
-function ingredientsFromInput(input) {
+function ingredientFromInput(input) {
     const arr = splitAtMostNParts(input, /\s+/, 3);
-    if(arr.length === 0)
+    if(arr.length === 0 || arr.length === 1 && arr[0] === "")
         return null;
     const hasNumber = arr[0].match(/\d/) != null;
     if(arr.length === 1 || !hasNumber) {
@@ -120,7 +120,11 @@ function parseIngredients(text) {
     let off = 0
     for(let i = 0; i < lines.length; i++) {
         const line = lines[i].trim();
-        ingredients[off++] = ingredientsFromInput(line);
+        const ingredient = ingredientFromInput(line);
+        if(ingredient === null) {
+            continue;
+        }
+        ingredients[off++] = ingredient;
     }
     return ingredients.slice(0, off)
 }
