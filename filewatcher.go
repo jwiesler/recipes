@@ -20,7 +20,7 @@ type FileWatcher struct {
 }
 
 func NewFileWatcher(interval time.Duration) (*FileWatcher, error) {
-	b, err := watcher.New(interval)
+	b, err := watcher.New(500*time.Millisecond, interval, false)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +35,7 @@ func NewFileWatcher(interval time.Duration) (*FileWatcher, error) {
 			select {
 			case e := <-b.Events:
 				w.handleEvents(e)
-			case err := <-b.Errors:
+			case err := <-b.Errors():
 				if err != nil {
 					logger.Warn("Error while watching", zap.Error(err))
 				}

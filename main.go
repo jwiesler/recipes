@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"github.com/fsnotify/fsnotify"
 	"github.com/gorilla/mux"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"golang.org/x/text/runes"
