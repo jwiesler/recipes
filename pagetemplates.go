@@ -229,6 +229,18 @@ func (r *PageRenderer) RenderCreate(w io.Writer) error {
 			BaseUrl: r.BaseUrl,
 			Title:   "Neues Rezept",
 		},
+		Recipe: &BakedRecipe{
+			Name: "",
+			ImagePath: "",
+			Description: "",
+			IngredientsSections: []IngredientsSection{{
+				Heading: "",
+				Ingredients: []Ingredient{},
+			}},
+			IngredientSummaries: []IngredientSummary{},
+			Instructions: "",
+			Source: "",
+		},
 	}
 	logger.Debug("Rendering create page")
 	return r.Templates.RenderEdit(w, &page)
