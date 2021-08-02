@@ -2,7 +2,12 @@
 
 $background-color: color.scale(#ffffff, $lightness: -86%); // #222
 $secondary-background-color: color.scale($background-color, $lightness: 5%);
+$light-background-color: color.scale($background-color, $lightness: 1.5%);
 $border-color: $secondary-background-color;
+
+@function borderFromBackground($color) {
+  @return color.scale($color, $lightness: 15%)
+}
 
 $text-primary-color: #ffffff;
 $text-secondary-color: color.scale($text-primary-color, $lightness: -7%);
@@ -41,10 +46,14 @@ $h6-font-size: 1rem;
   > *:not(:last-child) {
     margin-bottom: $distance;
   }
+
+  > *:last-child {
+    margin-bottom: 0;
+  }
 }
 
 $spacing-l: 2rem;
-$spacing-m: 1rem;
+$spacing-m: 1.25rem;
 $spacing-s: 0.5rem;
 
 .border-between-large {
@@ -197,6 +206,19 @@ body, .modal-content {
   }
 }
 
+@mixin hover-button($background) {
+  background-color: $background;
+
+  &:hover {
+    text-decoration: none;
+    background-color: color.scale($background, $lightness: 5%);
+  }
+
+  &:disabled {
+    opacity: 0.65;
+  }
+}
+
 .ingredients-table {
   width: 100%;
   $border-radius: 0.5rem;
@@ -207,9 +229,15 @@ body, .modal-content {
     &:nth-child(odd) {
       border-radius: $border-radius;
       background-color: $secondary-background-color;
+      $scaled-border: borderFromBackground($secondary-background-color);
 
       input {
-        border-color: $background-color;
+        border-color: $scaled-border;
+      }
+
+      .tool-button {
+        border-color: $scaled-border;
+        @include hover-button($secondary-background-color);
       }
     }
 
@@ -262,7 +290,7 @@ select option {
 }
 
 input, textarea, select {
-  border: 1px solid $secondary-background-color;
+  border: 1px solid borderFromBackground($background-color);
   padding: 0.2em 0.5em;
   text-align: inherit;
   background-color: inherit;
@@ -316,30 +344,37 @@ textarea {
 
 .text-button {
   border: 1px solid $border-color;
-  background-color: $secondary-background-color;
-
-  &:hover {
-    background-color: color.scale($secondary-background-color, $lightness: 5%);;
-  }
+  @include hover-button($background-color);
 }
 
 .tool-button {
   padding: 0.25em;
-  vertical-align: middle;
+  @include hover-button($background-color);
   text-align: center;
-
-  &:hover {
-    text-decoration: none;
-    background-color: $secondary-background-color;
-  }
 
   &.fa {
     width: 1.5em;
     height: 1.5em;
   }
+}
 
-  &:disabled {
-    opacity: 0.65;
+.section {
+  background-color: $light-background-color;
+  padding: 0.5em;
+  border-radius: 0.5em;
+
+  $scaled-border: borderFromBackground($light-background-color);
+
+  input, textarea, select {
+    border-color: $scaled-border;
+  }
+
+  .text-button {
+    border-color: $scaled-border;
+  }
+
+  .text-button, .tool-button {
+    @include hover-button($light-background-color);
   }
 }
 

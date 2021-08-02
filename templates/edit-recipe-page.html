@@ -1,7 +1,7 @@
 {{- define "ingredient-row" -}}
     <div class="ingredients-row-wrapper hover-show-display-base">
         <div class="ingredient-amount vspace-between-small-r">
-            <div class="toolbar toolbar-left toolbar-1 hover-show-display vspace-between-small"><button tabindex="-1" class="tool-button button-delete fa fa-times"></button></div>
+            <div class="toolbar toolbar-left toolbar-1 vspace-between-small"><button tabindex="-1" class="tool-button button-delete fa fa-times"></button></div>
             <input class="ingredient-amount-input editable" placeholder="Menge" value="{{ .Amount }}" /><input class="ingredient-unit-input editable" value="{{ .Unit }}" placeholder="Einheit" />
         </div>
         <div class="ingredient-name vspace-between-small">
@@ -12,11 +12,11 @@
 {{- end -}}
 
 {{- define "ingredients-section" -}}
-    <div class="ingredients-section hover-show-visible-base">
+    <div class="ingredients-section section">
         <div class="toolbar-wrapper">
-            <div class="toolbar toolbar-left toolbar-3 hover-show-visible vspace-between-small"><button tabindex="-1" class="tool-button button-delete fa fa-times"></button></div>
+            <div class="toolbar toolbar-left toolbar-3 vspace-between-small"><button tabindex="-1" class="tool-button button-delete fa fa-times"></button></div>
             <div class="toolbar-center"><input class="h3 ingredients-section-name-input editable" value="{{ .Heading }}" placeholder="Überschrift" /></div>
-            <div class="toolbar toolbar-right toolbar-3 hover-show-visible vspace-between-small"><button tabindex="-1" class="tool-button button-import fa fa-download" data-toggle="modal" data-target="#import-ingredients-text-modal"></button><button tabindex="-1" class="tool-button button-up fa fa-arrow-up"></button><button tabindex="-1" class="tool-button button-down fa fa-arrow-down"></button></div>
+            <div class="toolbar toolbar-right toolbar-3 vspace-between-small"><button tabindex="-1" class="tool-button button-import fa fa-download" data-toggle="modal" data-target="#import-ingredients-text-modal"></button><button tabindex="-1" class="tool-button button-up fa fa-arrow-up"></button><button tabindex="-1" class="tool-button button-down fa fa-arrow-down"></button></div>
         </div>
         <div class="ingredients-table">
             {{- range .Ingredients -}}
@@ -68,12 +68,16 @@
 
                     <div class="spacing-between-small">
                         <h2>Zubereitung</h2>
-                        <textarea id="instructions" class="editable" autocomplete="off" placeholder="Zubereitung" >{{- with .Recipe -}}{{ .Instructions }}{{- end -}}</textarea>
+                        <div class="section">
+                            <textarea id="instructions" class="editable" autocomplete="off" placeholder="Zubereitung" >{{- with .Recipe -}}{{ .Instructions }}{{- end -}}</textarea>
+                        </div>
                     </div>
 
                     <div class="spacing-between-small">
                         <h2>Quelle</h2>
-                        <textarea id="source" class="editable" autocomplete="off" placeholder="Quelle" >{{- with .Recipe -}}{{ .Source }}{{- end -}}</textarea>
+                        <div class="section">
+                            <textarea id="source" class="editable" autocomplete="off" placeholder="Quelle" >{{- with .Recipe -}}{{ .Source }}{{- end -}}</textarea>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -91,7 +95,7 @@
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-header justify-content-center">
-                            <h2 class="modal-title" id="exampleModalLabel">Zutaten importieren</h2>
+                            <h2 class="modal-title">Zutaten importieren</h2>
                         </div>
                         <div class="modal-body">
                             <textarea id="import-ingredients-text-area" rows="4" placeholder="[Anzahl] [Einheit] [Zutat]"></textarea>
@@ -106,7 +110,7 @@
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
                             <div class="modal-header justify-content-center">
-                                <h2 class="modal-title" id="exampleModalLabel">Sicher?</h2>
+                                <h2 class="modal-title">Sicher?</h2>
                             </div>
                             <div class="modal-body">
                                 Dieses Rezept wirklich löschen?

@@ -7,33 +7,42 @@
 }
 
 .border-between-large > *:not(:last-child) {
-  margin-bottom: 1rem;
-  padding-bottom: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1.25rem;
   border-bottom: 4px solid #2f2f2f;
 }
 
 .border-between > *:not(:last-child) {
-  margin-bottom: 1rem;
-  padding-bottom: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1.25rem;
   border-bottom: 2px solid #2f2f2f;
 }
 
 .border-between-small > *:not(:last-child) {
-  margin-bottom: 1rem;
-  padding-bottom: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1.25rem;
   border-bottom: 1px solid #2f2f2f;
 }
 
 .spacing-between-large > *:not(:last-child) {
   margin-bottom: 2rem;
 }
+.spacing-between-large > *:last-child {
+  margin-bottom: 0;
+}
 
 .spacing-between > *:not(:last-child) {
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
+}
+.spacing-between > *:last-child {
+  margin-bottom: 0;
 }
 
 .spacing-between-small > *:not(:last-child) {
   margin-bottom: 0.5rem;
+}
+.spacing-between-small > *:last-child {
+  margin-bottom: 0;
 }
 
 .vspace-between-small > *:not(:first-child) {
@@ -147,7 +156,18 @@ body, .modal-content {
   background-color: #2f2f2f;
 }
 .ingredients-table > .ingredients-row-wrapper:nth-child(odd) input {
-  border-color: #242424;
+  border-color: #4e4e4e;
+}
+.ingredients-table > .ingredients-row-wrapper:nth-child(odd) .tool-button {
+  border-color: #4e4e4e;
+  background-color: #2f2f2f;
+}
+.ingredients-table > .ingredients-row-wrapper:nth-child(odd) .tool-button:hover {
+  text-decoration: none;
+  background-color: #393939;
+}
+.ingredients-table > .ingredients-row-wrapper:nth-child(odd) .tool-button:disabled {
+  opacity: 0.65;
 }
 .ingredients-table > .ingredients-row-wrapper .ingredient-amount {
   width: 40%;
@@ -195,7 +215,7 @@ select option {
 }
 
 input, textarea, select {
-  border: 1px solid #2f2f2f;
+  border: 1px solid #454545;
   padding: 0.2em 0.5em;
   text-align: inherit;
   background-color: inherit;
@@ -242,26 +262,52 @@ textarea#instructions {
 
 .text-button {
   border: 1px solid #2f2f2f;
-  background-color: #2f2f2f;
+  background-color: #242424;
 }
 .text-button:hover {
-  background-color: #393939;
+  text-decoration: none;
+  background-color: #2f2f2f;
+}
+.text-button:disabled {
+  opacity: 0.65;
 }
 
 .tool-button {
   padding: 0.25em;
-  vertical-align: middle;
+  background-color: #242424;
   text-align: center;
 }
 .tool-button:hover {
   text-decoration: none;
   background-color: #2f2f2f;
 }
+.tool-button:disabled {
+  opacity: 0.65;
+}
 .tool-button.fa {
   width: 1.5em;
   height: 1.5em;
 }
-.tool-button:disabled {
+
+.section {
+  background-color: #272727;
+  padding: 0.5em;
+  border-radius: 0.5em;
+}
+.section input, .section textarea, .section select {
+  border-color: #474747;
+}
+.section .text-button {
+  border-color: #474747;
+}
+.section .text-button, .section .tool-button {
+  background-color: #272727;
+}
+.section .text-button:hover, .section .tool-button:hover {
+  text-decoration: none;
+  background-color: #323232;
+}
+.section .text-button:disabled, .section .tool-button:disabled {
   opacity: 0.65;
 }
 
