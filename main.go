@@ -259,7 +259,7 @@ func (ctx *RecipesContext) HandleAuthenticate(h AuthenticatedHandler) http.Handl
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		identifier, ok := ctx.TokenManager.GetFromRequest(r)
 		if !ok {
-			http.Error(w, "Access denied", http.StatusForbidden)
+			http.Error(w, "access-denied", http.StatusForbidden)
 			return
 		}
 		h(w, r, identifier)
@@ -345,14 +345,14 @@ func User(identifier Identifier) zap.Field {
 func ReadRecipeRequestResponse(w http.ResponseWriter, r *http.Request, identifier Identifier) (recipe *RawRecipe, rid string, ok bool) {
 	recipe, err := ReadRecipeFromResponse(r.Body)
 	if err != nil {
-		http.Error(w, "Failed to read edit post request body", 400)
+		http.Error(w, "invalid-request-body", 400)
 		logger.Warn("Failed to read edit post request body", zap.Error(err), User(identifier))
 		return nil, "", false
 	}
 
 	rid = TransformToIdString(strings.TrimSpace(recipe.Name))
 	if len(rid) == 0 {
-		http.Error(w, "Can't create a recipe with an empty id", 400)
+		http.Error(w, "empty-id", 400)
 		logger.Info("Can't create a recipe with an empty id", User(identifier))
 		return nil, "", false
 	}
@@ -368,7 +368,7 @@ func (ctx *RecipesContext) RedirectToRecipe(w http.ResponseWriter, r *http.Reque
 }
 
 func ErrorPlaylistAlreadyExists(w http.ResponseWriter, rid string, identifier Identifier) {
-	http.Error(w, "A recipe with this id already exists", 400)
+	http.Error(w, "duplicate-id", 400)
 	logger.Info("A recipe with this id already exists", zap.String("id", rid), User(identifier))
 }
 
@@ -385,7 +385,7 @@ func (ctx *RecipesContext) HandleCreateResponse(w http.ResponseWriter, r *http.R
 	}
 
 	if err != nil {
-		http.Error(w, "Failed to add recipe", 400)
+		http.Error(w, "internal-error", 400)
 		logger.Warn("Failed to add recipe", zap.String("identifier", rid), User(identifier), zap.Error(err))
 		return
 	}
@@ -424,7 +424,7 @@ func (ctx *RecipesContext) HandleEditResponse(w http.ResponseWriter, r *http.Req
 		return
 	}
 	if err != nil {
-		http.Error(w, "Failed to replace recipe", 400)
+		http.Error(w, "internal-error", 400)
 		logger.Warn("Failed to replace recipe", zap.String("id", rid), zap.String("old-id", oldRid), User(identifier), zap.Error(err))
 		return
 	}
@@ -443,7 +443,7 @@ func (ctx *RecipesContext) HandleDeleteResponse(w http.ResponseWriter, r *http.R
 		return
 	}
 	if err != nil {
-		http.Error(w, "Failed to delete recipe", 400)
+		http.Error(w, "internal-error", 400)
 		logger.Warn("Failed to delete recipe", zap.String("id", rid), User(identifier), zap.Error(err))
 		return
 	}

@@ -194,8 +194,14 @@ $(function() {
     }
 
     function serverError(xhr) {
-        const text = xhr.responseText
-        errorToastContent.innerText = "Antwort des Servers: " + text
+        const text = xhr.responseText.trim();
+        let message;
+        if(errors.hasOwnProperty(text)) {
+            message = errors[text];
+        } else {
+            message = "Antwort des Servers: " + text;
+        }
+        errorToastContent.innerText = message;
         errorToast.toast("dispose")
         errorToast.toast("show")
         console.error("Failed with status code " + xhr.status + " (" + xhr.statusText + "): " + text)

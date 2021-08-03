@@ -1,3 +1,11 @@
+const errors = {
+    "duplicate-id": "A recipe with this id already exists",
+    "access-denied": "Access denied",
+    "invalid-request-body": "Failed to parse request body",
+    "empty-id": "Can't create a recipe with an empty id",
+    "internal-error": "Internal server error",
+}
+
 function extendSection(section) {
     const jsection = $(section)
     section.ingredientsTable = jsection.children(".ingredients-table").first()[0]
