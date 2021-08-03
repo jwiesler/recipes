@@ -142,9 +142,11 @@ func (r *RawRecipe) BakeRecipe() *BakedRecipe {
 func (r *RawRecipe) Clean() {
 	r.Name = strings.TrimSpace(r.Name)
 	r.Description = strings.TrimSpace(r.Description)
-	for _, section := range r.IngredientsSections {
+	for s := range r.IngredientsSections {
+		section := &r.IngredientsSections[s]
 		section.Heading = strings.TrimSpace(section.Heading)
-		for _, ingredient := range section.Ingredients {
+		for i := range section.Ingredients {
+			ingredient := &section.Ingredients[i]
 			ingredient.Name = strings.TrimSpace(ingredient.Name)
 			ingredient.Unit = strings.TrimSpace(ingredient.Unit)
 			ingredient.Amount = strings.ReplaceAll(strings.TrimSpace(ingredient.Amount), ",", ".")
