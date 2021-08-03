@@ -1,9 +1,9 @@
 const errors = {
-    "duplicate-id": "A recipe with this id already exists",
-    "access-denied": "Access denied",
-    "invalid-request-body": "Failed to parse request body",
-    "empty-id": "Can't create a recipe with an empty id",
-    "internal-error": "Internal server error",
+    "duplicate-id": "Ein Rezept mit diesem Namen existiert bereits.",
+    "access-denied": "Zugriff verweigert.",
+    "invalid-request-body": "Failed to parse request body.",
+    "empty-id": "Ein Rezept muss einen nichtleeren Namen haben.",
+    "internal-error": "Internal server error.",
 }
 
 function extendSection(section) {
