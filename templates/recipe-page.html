@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}{{ recipe.Name }}{% endblock title %}
+
+{% block head %}
+{{ super() }}
+<script src="{{ base_url }}/static/js/base.js"></script>
+<script src="{{ base_url }}/static/js/recipe.js"></script>
+{% endblock head %}
+{% block navbar %}
+<li class="nav-item">
+    <a class="nav-link fa fa-pencil" href="{{ base_url }}/edit/{{ id }}"></a>
+</li>
+{{ super() }}
+{% endblock navbar %}
+{% block content %}
+<div class="content mx-auto recipe-container">
+    <div class="spacing-between-large">
+        <div class="spacing-between-small">
+            <h1>{{ recipe.Name }}</h1>
+            {%- if recipe.Description -%}
+            <p class="text-content">{{ recipe.Description }}</p>
+            {%- endif -%}
+            {%- if recipe.ImagePath -%}
+            <div><img class="parent-sized" src="{{ recipe.ImagePath }}"/></div>
+            {%- endif -%}
+        </div>
+        {% if recipe.IngredientsSections %}
+        <div id="ingredients" class="spacing-between">
+            <h2>Zutaten</h2>
+            {% if recipe.IngredientSummaries %}
+            <div class="spacing-between-small section">
+                <p>Zutaten skalieren</p>
+                <div id="scale-ingredient-wrapper" class="vspace-between-small">
+                    <input id="scale-ingredient-amount" class="remove-number-arrows" type="number" min="0" step="0.001"
+                           placeholder="Menge"/><select id="scale-ingredient-select">
+                    {%- for s in recipe.IngredientSummaries -%}
+                    <option data-total-amount="{{ s.Amount }}">{{ s.Name }}{% if s.Unit %} ({{ s.Unit }}){% endif %}
+                    </option>
+                    {%- endfor -%}
+                </select>
+                    <button id="scale-ingredient-button" class="text-button">Skalieren</button>
+                </div>
+            </div>
+            {%- endif -%}
+            <div id="ingredients-sections" class="spacing-between">
+                {%- for r in recipe.IngredientsSections -%}
+                <div class="ingredients-section section">
+                    {%- if r.Heading -%}
+                    <h4>{{ r.Heading }}</h4>
+                    {%- endif -%}
+                    <div class="ingredients-table text-content">
+                        {%- for i in r.Ingredients -%}
+                        <div class="ingredients-row-wrapper"><span class="ingredient-amount"><span
+                                class="ingredient-amount-number">{{ i.Amount }}</span>{% if i.Unit is whiteSpacedUnit %} {% endif %}<span
+                                class="ingredient-amount-unit">
+                                                    {%- if i.Unit %}{{ i.Unit }}{% endif -%}</span> </span><span
+                                class="ingredient-name">
+                                                {{- i.Name -}}
+                                            </span></div>
+                        {%- endfor -%}
+                    </div>
+                </div>
+                {%- endfor -%}
+            </div>
+        </div>
+        {%- endif -%}
+        {%- if recipe.Instructions -%}
+        <div class="spacing-between-small">
+            <h2>Zubereitung</h2>
+            <div class="text-content text-block markdown-wrapper section">
+                {{ recipe.Instructions }}
+            </div>
+        </div>
+        {%- endif -%}
+        {%- if recipe.Source -%}
+        <div class="spacing-between-small">
+            <h2>Quelle</h2>
+            <div class="text-content markdown-wrapper section">
+                {{ recipe.Source }}
+            </div>
+        </div>
+        {%- endif -%}
+    </div>
+</div>
+{% endblock content %}

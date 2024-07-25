@@ -1,0 +1,499 @@
+@use "sass:color";
+
+$background-color: color.scale(#ffffff, $lightness: -86%); // #222
+$secondary-background-color: color.scale($background-color, $lightness: 5%);
+$light-background-color: color.scale($background-color, $lightness: 1.5%);
+$border-color: $secondary-background-color;
+
+@function borderFromBackground($color) {
+  @return color.scale($color, $lightness: 15%)
+}
+
+$text-primary-color: #ffffff;
+$text-secondary-color: color.scale($text-primary-color, $lightness: -7%);
+$link-color: color.scale(#fffdd3, $lightness: -60%, $saturation: -75%);
+$link-color-hovered: color.scale($link-color, $lightness: 10%);
+
+$h1-font-size: 2rem;
+$h2-font-size: 1.75rem;
+$h3-font-size: 1.5rem;
+$h4-font-size: 1.25rem;
+$h5-font-size: 1rem;
+$h6-font-size: 1rem;
+
+.hover-show-visible-base:not(:hover) {
+  .hover-show-visible {
+    visibility: hidden;
+  }
+}
+
+.hover-show-display-base:not(:hover) {
+  .hover-show-display {
+    display: none;
+  }
+}
+
+@mixin border-between($distance, $border-style) {
+  $spacing: $distance / 2;
+  > *:not(:last-child) {
+    margin-bottom: $spacing-m;
+    padding-bottom: $spacing-m;
+    border-bottom: $border-style;
+  }
+}
+
+@mixin spacing-between($distance) {
+  > *:not(:last-child) {
+    margin-bottom: $distance;
+  }
+
+  > *:last-child {
+    margin-bottom: 0;
+  }
+}
+
+$spacing-l: 2rem;
+$spacing-m: 1.25rem;
+$spacing-s: 0.5rem;
+
+.border-between-large {
+  @include border-between($spacing-l, 4px solid $border-color);
+}
+
+.border-between {
+  @include border-between($spacing-m, 2px solid $border-color);
+}
+
+.border-between-small {
+  @include border-between($spacing-s, 1px solid $border-color);
+}
+
+.spacing-between-large {
+  @include spacing-between($spacing-l);
+}
+
+.spacing-between {
+  @include spacing-between($spacing-m);
+}
+
+.spacing-between-small {
+  @include spacing-between($spacing-s);
+}
+
+.vspace-between-small {
+  > *:not(:first-child) {
+    margin-left: 0.5rem;
+  }
+
+  > *:first-child {
+    margin-left: 0;
+  }
+}
+
+.vspace-between-small-r {
+  > *:not(:last-child) {
+    margin-right: 0.5rem;
+  }
+
+  > *:last-child {
+    margin-right: 0;
+  }
+}
+
+body, .modal-content {
+  background-color: $background-color;
+}
+
+.content, .modal-content {
+  text-align: center;
+  color: $text-primary-color;
+
+  a {
+    color: $link-color;
+
+    &:hover {
+      color: $link-color-hovered;
+    }
+  }
+
+  a.button {
+    color: inherit;
+  }
+
+  h1, h2, h3, h4, h5, h6,
+  .h1, .h2, .h3, .h4, .h5, .h6 {
+    letter-spacing: 2px;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+
+  h1, .h1 {
+    font-size: $h1-font-size;
+  }
+
+  h2, .h2 {
+    font-size: $h2-font-size;
+  }
+
+  h3, .h3 {
+    font-size: $h3-font-size;
+  }
+
+  h4, .h4 {
+    font-size: $h4-font-size;
+  }
+
+  h5, .h5 {
+    font-size: $h5-font-size;
+  }
+
+  h6, .h6 {
+    font-size: $h6-font-size;
+  }
+}
+
+.nav-container, .toast-container, .recipe-container {
+  max-width: 500px;
+}
+
+.nav-container {
+  padding-left: 0.5rem;
+}
+
+.recipe-container {
+  padding: 1em 0.5em;
+}
+
+.toast-container {
+  > .toast {
+    margin: 1em 0.5em;
+  }
+}
+
+.markdown-wrapper {
+  p {
+    margin-bottom: 0.5rem;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: $text-primary-color;
+    margin-bottom: 0.25rem;
+  }
+
+  h1 {
+    font-size: $h3-font-size;
+  }
+
+  h2 {
+    font-size: $h4-font-size;
+  }
+
+  h3 {
+    font-size: $h5-font-size;
+  }
+
+  h4, h5, h6 {
+    font-size: $h6-font-size;
+  }
+
+  ol, ul {
+    padding: 0;
+    list-style-position: inside;
+  }
+
+  li::marker {
+    color: $text-primary-color;
+  }
+}
+
+@mixin hover-button($background) {
+  background-color: $background;
+
+  &:hover {
+    text-decoration: none;
+    background-color: color.scale($background, $lightness: 5%);
+  }
+
+  &:disabled {
+    opacity: 0.65;
+  }
+}
+
+.ingredients-table {
+  width: 100%;
+  $border-radius: 0.5rem;
+
+  > .ingredients-row-wrapper {
+    display: flex;
+
+    &:nth-child(odd) {
+      border-radius: $border-radius;
+      background-color: $secondary-background-color;
+      $scaled-border: borderFromBackground($secondary-background-color);
+
+      input {
+        border-color: $scaled-border;
+      }
+
+      .tool-button {
+        border-color: $scaled-border;
+        @include hover-button($secondary-background-color);
+      }
+    }
+
+    .ingredient-amount {
+      width: 40%;
+      text-align: right;
+      padding: 0.5em 0.25em 0.5em 0.5em;
+    }
+
+    .ingredient-name {
+      width: 60%;
+      text-align: left;
+      padding: 0.5em 0.5em 0.5em 0.25em;
+    }
+  }
+}
+
+input[type=number].remove-number-arrows {
+  -moz-appearance: textfield;
+}
+
+input::-webkit-outer-spin-button.remove-number-arrows,
+input::-webkit-inner-spin-button.remove-number-arrows {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+#scale-ingredient-wrapper {
+  display: flex;
+  text-align: left;
+}
+
+#scale-ingredient-amount {
+  flex-basis: 5em;
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+
+input:hover {
+  color: aliceblue;
+}
+
+input, select, button {
+  border-radius: 0.25em;
+}
+
+select option {
+  background-color: $secondary-background-color;
+  color: inherit;
+}
+
+input, textarea, select {
+  border: 1px solid borderFromBackground($background-color);
+  padding: 0.2em 0.5em;
+  text-align: inherit;
+  background-color: inherit;
+  color: inherit;
+  min-width: 0;
+  width: 100%;
+}
+
+textarea {
+  width: 100%;
+  overflow-x: auto;
+  resize: vertical;
+  text-align: left;
+  padding: 0.5em;
+
+  &#instructions {
+    min-height: 20em;
+  }
+}
+
+.editable {
+  .ingredient-amount, .ingredient-name {
+    display: flex;
+    align-items: center;
+  }
+
+  .ingredient-unit-input {
+    flex-basis: 4.3em;
+    flex-shrink: 0;
+  }
+
+  .ingredient-amount-input {
+    flex-basis: 4em;
+    flex-grow: 1;
+  }
+
+  .ingredient-name-input {
+    width: 100%;
+  }
+}
+
+.nav-button, .tool-button, .text-button {
+  background: none;
+  border: none;
+  color: inherit;
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.text-button {
+  border: 1px solid $border-color;
+  @include hover-button($background-color);
+}
+
+.tool-button {
+  padding: 0.25em;
+  @include hover-button($background-color);
+  text-align: center;
+
+  &.fa {
+    width: 1.5em;
+    height: 1.5em;
+  }
+}
+
+.section {
+  background-color: $light-background-color;
+  padding: 0.5em;
+  border-radius: 0.5em;
+
+  $scaled-border: borderFromBackground($light-background-color);
+
+  input, textarea, select {
+    border-color: $scaled-border;
+  }
+
+  .text-button {
+    border-color: $scaled-border;
+  }
+
+  .text-button, .tool-button {
+    @include hover-button($light-background-color);
+  }
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+}
+
+.toolbar-wrapper {
+  display: flex;
+  flex-direction: row;
+
+  >.toolbar-3 {
+    flex: 1 0 5.5em;
+  }
+
+  >.toolbar-1 {
+    flex: 1 0 1.5em;
+  }
+
+  >.toolbar-center {
+    flex-grow: 2;
+  }
+
+  >.toolbar-left {
+    justify-content: flex-start;
+  }
+
+  >.toolbar-right {
+    justify-content: flex-end;
+  }
+
+  > .toolbar-left,
+  > .toolbar-right {
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+  }
+}
+
+.toolbar-center input.editable, .submit-button, .delete-recipe-button {
+  width: 100%;
+}
+
+#button-add-section {
+  font-size: 2rem;
+}
+
+#defaults {
+  display: none;
+}
+
+.recipes-list {
+  list-style: none;
+  padding: 0;
+
+  > li {
+    padding: 0.25rem;
+  }
+}
+
+.toast {
+  background-color: $secondary-background-color;
+}
+
+#toast-submit-failed {
+  max-width: unset;
+}
+
+.navbar-nav {
+  flex-direction: row;
+}
+
+.nav-button, .nav-link {
+  &.fa {
+    font-size: 1.5rem;
+    width: 2.5rem;
+    text-align: center;
+  }
+}
+
+@mixin button-effects($color) {
+  color: color.scale($color, $alpha: -40%);
+
+  &:disabled {
+    color: color.scale($color, $alpha: -75%);
+  }
+
+  &:hover:not(:disabled) {
+    color: color.scale($color, $alpha: -25%);
+  }
+}
+
+.nav-button {
+  @include button-effects(#ffffff);
+  padding: 0.5rem 0.5rem;
+}
+
+#delete-recipe-modal-button {
+  @include button-effects(#ff8c8c);
+}
+
+.navbar-dark .navbar-brand {
+  @include button-effects(#ffffff);
+}
+
+.modal-header, .modal-footer {
+  border-color: $secondary-background-color;
+}
+
+.text-content {
+  color: $text-secondary-color;
+}
+
+.text-block {
+  text-align: justify;
+}
+
+#recipe-edit-form {
+  .h1, .h2, .h3, .h4, .h5, .h6 {
+    text-transform: initial;
+  }
+}

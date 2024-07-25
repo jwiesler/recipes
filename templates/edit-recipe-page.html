@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}{% if recipe %}Bearbeiten - {{ recipe.Name }}{% else %}Neues Rezept{% endif %}{% endblock title %}
+
+{% block head %}
+{{ super() }}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.js"
+        crossorigin="anonymous"></script>
+<script src="{{ base_url }}/static/js/base.js"></script>
+<script src="{{ base_url }}/static/js/edit.js"></script>
+{% endblock head %}
+
+{% block navbar %}
+{% if id %}
+<li class="nav-item">
+    <button id="delete-recipe-modal-button" class="nav-button fa fa-trash" data-bs-target="#confirm-delete-modal"
+            data-bs-toggle="modal"></button>
+</li>
+{% endif %}
+<li class="nav-item">
+    <button id="submit-recipe-button" class="nav-button fa fa-floppy-o" data-method="post" data-action="
+                            {%- if id -%}
+                                {{- base_url -}}/edit/{{ id }}
+                            {%- else -%}
+                                {{- base_url -}}/create
+                            {%- endif -%}
+                            "></button>
+</li>
+{% if id %}
+<li class="nav-item">
+    <a class="nav-link fa fa-times" href="{{ base_url }}/recipe/{{ id }}"></a>
+</li>
+{% else %}
+<li class="nav-item">
+    <a class="nav-link fa fa-times" href="{{ base_url }}/"></a>
+</li>
+{% endif %}
+{% endblock navbar %}
+
+{%- macro ingredientRow(name, amount, unit) -%}
+<div class="ingredients-row-wrapper hover-show-display-base">
+    <div class="ingredient-amount vspace-between-small-r">
+        <div class="toolbar toolbar-left toolbar-1 vspace-between-small">
+            <button tabindex="-1" class="tool-button button-delete fa fa-times"></button>
+        </div>
+        <input class="ingredient-amount-input editable" placeholder="Menge" value="{{ amount }}"/><input
+            class="ingredient-unit-input editable" value="{{ unit }}" placeholder="Einheit"/>
+    </div>
+    <div class="ingredient-name vspace-between-small">
+        <input class="ingredient-name-input editable" placeholder="Zutat" value="{{ name }}"/>
+        <div class="toolbar toolbar-right toolbar-1 toolbar hover-show-display vspace-between-small">
+            <button tabindex="-1" class="tool-button button-up fa fa-arrow-up"></button>
+            <button tabindex="-1" class="tool-button button-down fa fa-arrow-down"></button>
+        </div>
+    </div>
+</div>
+{%- endmacro -%}
+
+{%- macro ingredientsSection(heading, ingredients) -%}
+<div class="ingredients-section section">
+    <div class="toolbar-wrapper">
+        <div class="toolbar toolbar-left toolbar-3 vspace-between-small">
+            <button tabindex="-1" class="tool-button button-delete fa fa-times"></button>
+        </div>
+        <div class="toolbar-center"><input class="h3 ingredients-section-name-input editable" value="{{ heading }}"
+                                           placeholder="Überschrift"/></div>
+        <div class="toolbar toolbar-right toolbar-3 vspace-between-small">
+            <button tabindex="-1" class="tool-button button-import fa fa-download" data-bs-toggle="modal"
+                    data-bs-target="#import-ingredients-text-modal"></button>
+            <button tabindex="-1" class="tool-button button-up fa fa-arrow-up"></button>
+            <button tabindex="-1" class="tool-button button-down fa fa-arrow-down"></button>
+        </div>
+    </div>
+    <div class="ingredients-table">
+        {%- for i in ingredients -%}
+        {{- self::ingredientRow(name=i.Name, amount=i.Amount, unit=i.Unit) -}}
+        {%- endfor -%}
+    </div>
+    <div>
+        <button tabindex="-1" class="tool-button button-add fa fa-plus hover-show-visible"></button>
+    </div>
+</div>
+{%- endmacro -%}
+
+{% block content %}
+<div class="content">
+    <div class="recipe-container mx-auto editable">
+        <div id="recipe-edit-form">
+            <div class="spacing-between-large">
+                <div class="spacing-between-small">
+                    <input id="name" class="h1 editable" placeholder="Name" autocomplete="off" {% if recipe %}
+                           value="{{ recipe.Name }}" {% endif %}/>
+                    <p class="text-content"><input id="description" class="recipe-description" class="editable"
+                                                   placeholder="Beschreibung" autocomplete="off" {% if recipe %}
+                                                   value="{{ recipe.Description }}" {% endif %}/></p>
+                    <div>
+                        {% if recipe %}
+                        {% if recipe.ImagePath %}
+                        <img id="image" class="parent-sized" src="{{ recipe.ImagePath }}"/>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div id="ingredients" class="spacing-between">
+                    <h2>Zutaten</h2>
+                    <div id="ingredients-sections" class="spacing-between">
+                        {% if recipe %}
+                        {% for s in recipe.IngredientsSections %}
+                        {{ self::ingredientsSection(heading=s.Heading, ingredients=s.Ingredients) }}
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+                    <div>
+                        <button id="button-add-section" tabindex="-1" class="tool-button fa fa-plus"></button>
+                    </div>
+                </div>
+
+                <div class="spacing-between-small">
+                    <h2>Zubereitung</h2>
+                    <div class="section">
+                        <textarea id="instructions" class="editable" autocomplete="off" placeholder="Zubereitung">{% if recipe %}{{ recipe.Instructions }}{% endif %}</textarea>
+                    </div>
+                </div>
+
+                <div class="spacing-between-small">
+                    <h2>Quelle</h2>
+                    <div class="section">
+                        <textarea id="source" class="editable" autocomplete="off" placeholder="Quelle">{% if recipe %}{{ recipe.Source }}{% endif %}</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="toast-container mx-auto fixed-bottom">
+            <div id="toast-submit-failed" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true"
+                 data-bs-delay="5000">
+                <div class="toast-header">
+                    <strong class="mr-auto">Speichern fehlgeschlagen</strong>
+                    <button type="button" class="ml-2 mb-1 close" data-bs-dismiss="toast" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="toast-body"></div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="import-ingredients-text-modal" tabindex="-1" role="dialog"
+             aria-labelledby="importIngredientsTextModal" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header justify-content-center">
+                        <h2 class="modal-title">Zutaten importieren</h2>
+                    </div>
+                    <div class="modal-body">
+                        <textarea id="import-ingredients-text-area" rows="4"
+                                  placeholder="[Anzahl] [Einheit] [Zutat]"></textarea>
+                    </div>
+                    <div class="modal-footer justify-content-center">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                        <button id="import-ingredients-text-button" type="button" class="btn btn-primary">Importieren
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if id %}
+        <div class="modal fade" id="confirm-delete-modal" tabindex="-1" role="dialog"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header justify-content-center">
+                        <h2 class="modal-title">Sicher?</h2>
+                    </div>
+                    <div class="modal-body">
+                        Dieses Rezept wirklich löschen?
+                    </div>
+                    <div class="modal-footer justify-content-center">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                        <button id="delete-recipe-button" type="button" class="btn btn-danger" data-method="post"
+                                data-action="{{ base_url }}/delete/{{ id }}">Löschen
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    <div id="defaults">
+        <div id="default-row">
+            {{- self::ingredientRow(name="", amount="", unit="") -}}
+        </div>
+        <div id="default-section">
+            {{- self::ingredientsSection(heading="", ingredients=[]) -}}
+        </div>
+    </div>
+</div>
+{% endblock content %}

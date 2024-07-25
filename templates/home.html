@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Rezepte{% endblock title %}
+
+{% block content %}
+<div class="content mx-auto recipe-container spacing-between">
+    <h1>Rezepte</h1>
+    <ul class="recipes-list text-content">
+        {%- for id, recipe in recipes -%}
+        <li>
+            <a href="{{ base_url }}/recipe/{{ id }}">{{ recipe }}</a>
+        </li>
+        {%- endfor -%}
+    </ul>
+</div>
+{% endblock content %}

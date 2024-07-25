@@ -1,0 +1,95 @@
+.no-select {
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	-ms-user-select: none;
+	-o-user-select: none;
+	user-select: none;    
+}
+
+.no-outline {
+	outline: none;
+}
+
+.spacing-between > *:not(:last-child) {
+	margin-bottom: 1rem;
+}
+
+.no-spacing-bottom > * {
+	margin-bottom: 0;
+}
+
+.spacing-between > *:last-child {
+	margin-bottom: 0;
+}
+
+.spacing-between-large > *:not(:last-child) {
+	margin-bottom: 1.5rem;
+}
+
+.spacing-between-large > *:last-child {
+	margin-bottom: 0;
+}
+
+.collapse-spacing-top {
+	margin-top: -1rem;
+}
+
+.collapse-spacing-bottom {
+	margin-bottom: -1rem;
+}
+
+.spacing-between-small > *:not(:last-child) {
+	margin-bottom: 0.5rem;
+}
+
+.spacing-between-small > *:last-child {
+	margin-bottom: 0;
+}
+
+.vspace-between-small > *:not(:first-child) {
+	margin-left: 0.5rem;
+}
+
+.vspace-between-small > *:first-child {
+	margin-left: 0;
+}
+
+.vspace-between-small-r > *:not(:last-child) {
+	margin-right: 0.5rem;
+}
+
+.vspace-between-small-r > *:last-child {
+	margin-right: 0;
+}
+
+.spacing-between-small > *:last-child {
+	margin-bottom: 0;
+}
+
+.d-flex.spaced-boxes > div {
+	margin: 1rem;
+}
+
+.spaced-boxes-card {
+	max-width: 32rem;
+}
+
+.spaced-boxes-card.card-small {
+	max-width: 30rem;
+}
+
+.spaced-boxes-card.card-small > .image {
+	max-width: 24rem;
+}
+
+img.parent-sized {
+	width: 100%;
+}
+
+.hover-show-visible-base:not(:hover) .hover-show-visible {
+	visibility: hidden;
+}
+
+.hover-show-display-base:not(:hover) .hover-show-display {
+	display: none;
+}
