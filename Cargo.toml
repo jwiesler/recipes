@@ -1,0 +1,26 @@
+[package]
+name = "recipes"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tera = "1.20.0"
+serde_json = "1.0"
+comrak = "0.26.0"
+
+actix-web = "4.8.0"
+actix-files = "0.6.6"
+
+tokio = { version = "1.39.1", features = ["fs", "sync"] }
+
+tracing = "0.1.40"
+tracing-subscriber = "0.3.18"
+tracing-actix-web = "0.7.11"
+
+clap = { version = "4.5.10", features = ["derive"] }
+serde = { version = "1.0.204", features = ["derive"] }
+
+unicode-normalization = "0.1.23"
+
+[dev-dependencies]
+tempfile = "3.10.1"

@@ -1,0 +1,48 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "enabledManagers": [
+    "cargo"
+  ],
+  "extends": [
+    "config:recommended"
+  ],
+  "bumpVersion": "patch",
+  "updatePinnedDependencies": false,
+  "lockFileMaintenance": {
+    "automerge": true,
+    "enabled": true
+  },
+  "patch": {
+    "enabled": false
+  },
+  "packageRules": [
+    {
+      "automerge": true,
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ]
+    },
+    {
+      "matchPackagePatterns": [
+        "^actix"
+      ],
+      "groupName": "actix packages"
+    },
+    {
+      "matchPackagePatterns": [
+        "^image",
+        "^vibrant",
+        "^webp"
+      ],
+      "groupName": "image packages"
+    },
+    {
+      "matchPackagePatterns": [
+        "^rspotify",
+        "^reqwest"
+      ],
+      "groupName": "reqwest packages"
+    }
+  ]
+}
