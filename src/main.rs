@@ -89,11 +89,11 @@ async fn main() -> std::io::Result<()> {
             .watch(Path::new("templates"), RecursiveMode::Recursive)
             .unwrap();
 
-        let context = (&*context).clone();
+        let context = (*context).clone();
         tokio::spawn(async move {
             while let Ok(()) = tx.changed().await {
                 tokio::time::sleep(Duration::from_millis(200)).await;
-                let _ = tx.mark_unchanged();
+                tx.mark_unchanged();
                 info!("Reloading templates");
                 let templates = Templates::load("templates/**/*").await;
                 *context.templates.write().await = templates;
@@ -105,7 +105,7 @@ async fn main() -> std::io::Result<()> {
 
     let server = HttpServer::new(move || {
         let cookies_middleware = IdentityMiddleware::builder()
-            .visit_deadline(Some(Duration::from_secs(30 * 24 * 60)))
+            .visit_deadline(Some(Duration::from_secs(30 * 24 * 60 * 60)))
             .logout_behaviour(LogoutBehaviour::PurgeSession)
             .build();
         let session_middleware = SessionMiddleware::builder(
