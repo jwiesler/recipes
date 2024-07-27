@@ -10,6 +10,11 @@ use crate::error::Error;
 use crate::id::to_id_string;
 use crate::recipe::RawRecipe;
 
+pub fn handle_io_error(path: &Path, e: std::io::Error) -> Error {
+    error!("Failed to write {path:?}: {e}");
+    Error::Internal
+}
+
 struct RecipesIo(PathBuf);
 
 struct Write {
@@ -45,21 +50,16 @@ impl RecipesIo {
         Delete { path }
     }
 
-    fn handle_io_error(path: &Path, e: std::io::Error) -> Error {
-        error!("Failed to write {path:?}: {e}");
-        Error::Internal
-    }
-
     async fn write(&mut self, write: &Write) -> Result<(), Error> {
         tokio::fs::write(&write.path, &write.content)
             .await
-            .map_err(|e| Self::handle_io_error(&write.path, e))
+            .map_err(|e| handle_io_error(&write.path, e))
     }
 
     async fn delete(&mut self, delete: &Delete) -> Result<(), Error> {
         tokio::fs::remove_file(&delete.path)
             .await
-            .map_err(|e| Self::handle_io_error(&delete.path, e))
+            .map_err(|e| handle_io_error(&delete.path, e))
     }
 }
 
@@ -70,7 +70,9 @@ pub struct Recipes {
 
 impl Recipes {
     pub async fn load_dir(path: &Path) -> Recipes {
-        let mut t = read_dir(path).await.unwrap();
+        let mut t = read_dir(path)
+            .await
+            .unwrap_or_else(|e| panic!("Failed to list recipes dir: {e}"));
         let mut recipes = HashMap::new();
         while let Some(t) = t
             .next_entry()

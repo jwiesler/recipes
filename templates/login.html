@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Einloggen{% endblock title %}
+
+{% block content %}
+<div class="content mx-auto recipe-container spacing-between-large">
+    <div class="section">
+        <h1>Einloggen</h1>
+        <form action="/login" method="POST">
+            <div class="mb-3">
+                <input type="text" placeholder="Username" name="user"
+                       aria-describedby="emailHelp">
+            </div>
+            <div class="mb-3">
+                <input type="password" placeholder="Passwort" name="password">
+            </div>
+            <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+    </div>
+
+    <div class="section">
+        <h1>Registrieren</h1>
+        <p>Ein Administrator muss deinen Acount erst freischalten.</p>
+        <form action="/register" method="POST">
+            <div class="mb-3">
+                <input type="text" placeholder="Username" name="user"
+                       aria-describedby="emailHelp">
+            </div>
+            <div class="mb-3">
+                <input type="password" placeholder="Passwort" name="password">
+            </div>
+            <button type="submit" class="btn btn-primary">Registrieren</button>
+        </form>
+    </div>
+
+    <div class="section">
+        <h1>Sitzungen ausloggen</h1>
+        <p>Ausgenommen diese Sitzung.</p>
+        <form action="/invalidate-sessions" method="POST">
+            <button type="submit" class="btn btn-primary">Invalidate</button>
+        </form>
+    </div>
+</div>
+{% endblock content %}

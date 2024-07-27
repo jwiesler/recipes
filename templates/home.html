@@ -2,6 +2,13 @@
 
 {% block title %}Rezepte{% endblock title %}
 
+{% block navbar %}
+<li class="nav-item">
+    <a class="nav-link fa fa-users" href="{{ base_url }}/login"></a>
+</li>
+{{ super() }}
+{% endblock navbar %}
+
 {% block content %}
 <div class="content mx-auto recipe-container spacing-between">
     <h1>Rezepte</h1>

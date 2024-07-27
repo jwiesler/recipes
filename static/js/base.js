@@ -1,17 +1,18 @@
 const errors = {
     "already-exists": "Ein Rezept mit diesem Namen existiert bereits.",
-    "access-denied": "Zugriff verweigert.",
-    "invalid-request-body": "Failed to parse request body.",
+    "unauthorized": "Zugriff verweigert.",
     "empty-id": "Ein Rezept muss einen Namen haben.",
     "internal-error": "Internal server error.",
+    "user-name-too-short": "Username ist zu kurz, mindestens 4 Zeichen.",
+    "password-too-short": "Passwort ist zu kurz, mindestens 8 Zeichen.",
 }
 
 function extendSection(section) {
-    section.ingredientsTable = section.querySelector(":scope > .ingredients-table")
+    section.ingredientsTable = section.querySelector(".ingredients-table")
     section.ingredients = function () {
         return this.ingredientsTable.childNodes
     }
-    section.headingInput = section.querySelector(":scope > .ingredients-section-name-input")
+    section.headingInput = section.querySelector(".ingredients-section-name-input")
 }
 
 function doRedirect(xhr) {

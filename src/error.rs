@@ -9,6 +9,9 @@ pub enum Error {
     AlreadyExists,
     Internal,
     EmptyId,
+    Unauthorized,
+    UserNameTooShort,
+    PasswordTooShort,
 }
 
 impl Display for Error {
@@ -18,6 +21,9 @@ impl Display for Error {
             Error::NotFound => "not-found",
             Error::Internal => "internal-error",
             Error::EmptyId => "empty-id",
+            Error::Unauthorized => "unauthorized",
+            Error::UserNameTooShort => "user-name-too-short",
+            Error::PasswordTooShort => "password-too-short",
         };
         write!(f, "{code}")
     }
@@ -30,6 +36,9 @@ impl ResponseError for Error {
             Error::NotFound => StatusCode::NOT_FOUND,
             Error::Internal => StatusCode::INTERNAL_SERVER_ERROR,
             Error::EmptyId => StatusCode::BAD_REQUEST,
+            Error::Unauthorized => StatusCode::UNAUTHORIZED,
+            Error::UserNameTooShort => StatusCode::BAD_REQUEST,
+            Error::PasswordTooShort => StatusCode::BAD_REQUEST,
         }
     }
 }
