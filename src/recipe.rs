@@ -31,19 +31,24 @@ pub struct RawRecipe {
     pub ingredients_sections: Vec<IngredientsSection>,
     pub instructions: String,
     pub source: String,
+    #[serde(default)]
+    pub categories: Vec<String>,
 }
 
 impl RawRecipe {
     pub fn clean(&mut self) {
-        self.name = self.name.trim().to_string();
-        self.description = self.description.trim().to_string();
+        clean(&mut self.name);
+        clean(&mut self.description);
         for s in &mut self.ingredients_sections {
-            s.heading = s.heading.trim().to_string();
+            clean(&mut s.heading);
             for i in &mut s.ingredients {
-                i.name = i.name.trim().to_string();
+                clean(&mut i.name);
                 i.unit = i.unit.as_ref().map(|u| u.trim().to_string());
                 i.amount = i.amount.trim().replace(',', ".").to_string();
             }
+        }
+        for i in &mut self.categories {
+            clean(i);
         }
     }
 
@@ -71,8 +76,13 @@ impl RawRecipe {
             ingredients_sections,
             instructions: bake_md_string(&self.instructions),
             source: bake_md_string(&self.source),
+            categories: self.categories.iter().map(|s| bake_string(s)).collect(),
         }
     }
+}
+
+fn clean(s: &mut String) {
+    *s = s.trim().to_string()
 }
 
 #[derive(Deserialize, Serialize)]
@@ -93,6 +103,7 @@ pub struct BakedRecipe {
     ingredient_summaries: Vec<IngredientSummary>,
     instructions: String,
     source: String,
+    categories: Vec<String>,
 }
 
 fn bake_md_string(s: &str) -> String {

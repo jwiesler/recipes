@@ -13,14 +13,6 @@ function extendRow(row) {
     row.ingredient.originalAmount = row.ingredient.parseAmount()
 }
 
-function createIngredientInfo(name, unit) {
-    return {
-        name: name,
-        unit: unit,
-        amount: 0,
-    }
-}
-
 function scanIngredients(info, validRows) {
     info.findSections().forEach(function (section) {
         extendSection(section)

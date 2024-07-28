@@ -18,6 +18,13 @@
     <div class="spacing-between-large">
         <div class="spacing-between-small">
             <h1>{{ recipe.Name }}</h1>
+            {%- if recipe.Categories -%}
+            <div id="categories" class="d-flex justify-content-center gap-2">
+                {%- for c in recipe.Categories -%}
+                <div class="badge user-select-none text-bg-secondary">{{ c }}</div>
+                {%- endfor -%}
+            </div>
+            {%- endif -%}
             {%- if recipe.Description -%}
             <p class="text-content">{{ recipe.Description }}</p>
             {%- endif -%}

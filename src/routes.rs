@@ -15,11 +15,11 @@ use crate::recipe::RawRecipe;
 #[actix_web::get("/")]
 async fn page_home(ctx: Data<Context>) -> Html {
     let recipes: HashMap<String, Value> = ctx
-        .recipes
-        .list()
-        .await
-        .into_iter()
-        .map(|(k, v)| (k, Value::String(v)))
+        .recipes.list().await.iter()
+        .map(|(k, v)| (k.clone(), json!({
+            "name": v.name.clone(),
+            "categories": v.categories.iter().cloned().map(Value::String).collect::<Vec<_>>(),
+        })))
         .collect();
     let context = json!({
         "base_url": "",

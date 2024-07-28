@@ -132,6 +132,15 @@
                         <textarea id="source" class="editable" autocomplete="off" placeholder="Quelle">{% if recipe %}{{ recipe.Source }}{% endif %}</textarea>
                     </div>
                 </div>
+
+                <div class="spacing-between-small">
+                    <h2>Kategorien</h2>
+                    <p>Mit Komma getrennte Liste der Kategorien.</p>
+                    <div class="section">
+                        <textarea id="categories" class="editable" autocomplete="off"
+                                  placeholder="Hauptgericht, Dessert, Kuchen">{% if recipe %}{{ recipe.Categories | join(sep=', ') }}{% endif %}</textarea>
+                    </div>
+                </div>
             </div>
         </div>
 

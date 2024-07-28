@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
 use tokio::fs::{read_dir, read_to_string};
-use tokio::sync::{Mutex, RwLock};
+use tokio::sync::{Mutex, RwLock, RwLockReadGuard};
 use tracing::{error, warn};
 
 use crate::error::Error;
@@ -99,12 +99,8 @@ impl Recipes {
         }
     }
 
-    pub async fn list(&self) -> Vec<(String, String)> {
-        let recipes = self.recipes.read().await;
-        recipes
-            .iter()
-            .map(|(k, v)| (k.clone(), v.name.clone()))
-            .collect()
+    pub async fn list(&self) -> RwLockReadGuard<HashMap<String, RawRecipe>> {
+        self.recipes.read().await
     }
 
     pub async fn get(&self, id: &str) -> Result<RawRecipe, Error> {
@@ -166,18 +162,20 @@ impl Recipes {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+
     use tempfile::TempDir;
 
     use crate::recipe::{Ingredient, IngredientsSection, RawRecipe};
     use crate::recipes::Recipes;
 
-    #[actix_web::test]
+    #[tokio::test]
     async fn test_read_write() {
         let dir = TempDir::new().unwrap();
         let path = dir.path();
         let recipes = Recipes::load_dir(path).await;
 
-        assert_eq!(&recipes.list().await, &[]);
+        assert_eq!(&*recipes.list().await, &HashMap::new());
 
         let recipe = RawRecipe {
             name: "test 1".to_string(),
@@ -192,24 +190,41 @@ mod tests {
             }],
             instructions: "d".to_string(),
             source: "e".to_string(),
+            categories: vec![],
         };
         recipes
             .create("test-1".to_string(), recipe.clone())
             .await
             .unwrap();
-        assert_eq!(&recipes.list().await, &[("test-1".into(), "test 1".into())]);
+        assert_eq!(
+            &recipes
+                .list()
+                .await
+                .iter()
+                .map(|(k, v)| (k.as_str(), v.name.as_str()))
+                .collect::<Vec<_>>(),
+            &[("test-1", "test 1")]
+        );
         assert_eq!(recipes.recipes.read().await.get("test-1"), Some(&recipe));
 
         {
             let recipes = Recipes::load_dir(path).await;
-            assert_eq!(&recipes.list().await, &[("test-1".into(), "test 1".into())]);
+            assert_eq!(
+                &recipes
+                    .list()
+                    .await
+                    .iter()
+                    .map(|(k, v)| (k.as_str(), v.name.as_str()))
+                    .collect::<Vec<_>>(),
+                &[("test-1", "test 1")]
+            );
         }
 
         recipes.delete("test-1").await.unwrap();
 
         {
             let recipes = Recipes::load_dir(path).await;
-            assert_eq!(&recipes.list().await, &[]);
+            assert_eq!(&*recipes.list().await, &HashMap::new());
         }
     }
 }

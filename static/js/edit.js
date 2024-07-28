@@ -209,6 +209,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const description = info.description.value
         const instructions = info.instructions.value
         const source = info.source.value
+        const categories = info.categories.value.split(",")
         const sections = info.findSections()
         const resArray = new Array(sections.length)
         const imageElement = document.getElementById("image")
@@ -241,6 +242,7 @@ document.addEventListener("DOMContentLoaded", function () {
             IngredientsSections: resArray,
             Instructions: instructions,
             Source: source,
+            Categories: categories,
         }
         const json = JSON.stringify(res)
         const xhr = createRequestForButton(submitButton, true)

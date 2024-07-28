@@ -57,6 +57,7 @@ function createInitialState() {
         instructions: document.getElementById("instructions"),
         title: document.getElementById("name"),
         source: document.getElementById("source"),
+        categories: document.getElementById("categories"),
         findSections: function () {
             return this.ingredientsSections.querySelectorAll(":scope > div")
         }

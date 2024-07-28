@@ -2,21 +2,26 @@
 
 {% block title %}Rezepte{% endblock title %}
 
-{% block navbar %}
+{% block head %}
+{{ super() }}
+<script src="{{ base_url }}/static/js/home.js"></script>
+{% endblock head %}
+
+{%- block navbar -%}
 <li class="nav-item">
     <a class="nav-link fa fa-users" href="{{ base_url }}/login"></a>
 </li>
-{{ super() }}
-{% endblock navbar %}
+{{- super() -}}
+{%- endblock navbar %}
 
 {% block content %}
 <div class="content mx-auto recipe-container spacing-between">
     <h1>Rezepte</h1>
+    <div id="categories" class="d-flex justify-content-center gap-2"></div>
     <ul class="recipes-list text-content">
         {%- for id, recipe in recipes -%}
-        <li>
-            <a href="{{ base_url }}/recipe/{{ id }}">{{ recipe }}</a>
-        </li>
+        <li data-categories="{{ recipe.categories | join(sep=',') }}"><a href="{{ base_url }}/recipe/{{ id }}">{{
+            recipe.name }}</a></li>
         {%- endfor -%}
     </ul>
 </div>
