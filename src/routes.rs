@@ -53,7 +53,7 @@ async fn page_login(ctx: Data<Context>) -> Html {
 #[actix_web::get("/recipe/{recipe}")]
 #[instrument(skip(ctx))]
 async fn page_recipe(ctx: Data<Context>, id: Path<String>) -> Result<Html, Error> {
-    let id = id.into_inner();
+    let id = id.into_inner().to_lowercase();
     let recipe = ctx.recipes.get(&id).await?;
     let value = serde_json::to_value(recipe.bake()).unwrap();
     let context = json!({
@@ -88,7 +88,7 @@ async fn page_create(ctx: Data<Context>) -> Html {
 #[actix_web::get("/edit/{recipe}")]
 #[instrument(skip(ctx))]
 async fn page_edit(ctx: Data<Context>, id: Path<String>) -> Result<Html, Error> {
-    let id = id.into_inner();
+    let id = id.into_inner().to_lowercase();
     let recipe = ctx.recipes.get(&id).await?;
     let value = serde_json::to_value(recipe).unwrap();
     let context = json!({
