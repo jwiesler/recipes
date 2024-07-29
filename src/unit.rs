@@ -2,6 +2,9 @@ const SI_UNITS: [char; 3] = ['g', 'l', 'm'];
 const SI_UNIT_PREFIXES: [char; 5] = ['k', 'd', 'c', 'm', 'µ'];
 
 pub(crate) fn unit_needs_space(s: &str) -> bool {
+    if s.len() > 2 {
+        return true;
+    }
     let mut chars = s.chars();
     let Some(ch) = chars.next() else {
         return false;
@@ -24,4 +27,6 @@ fn test() {
     assert!(unit_needs_space("k"));
     assert!(!unit_needs_space("kg"));
     assert!(!unit_needs_space("g"));
+    assert!(unit_needs_space("gully"));
+    assert!(unit_needs_space("kk"));
 }
