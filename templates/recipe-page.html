@@ -58,10 +58,10 @@
                     {%- endif -%}
                     <div class="ingredients-table text-content">
                         {%- for i in r.Ingredients -%}
-                        <div class="ingredients-row-wrapper"><span class="ingredient-amount"><span
+                        <div class="ingredients-row-wrapper vspace-between-small"><span class="ingredient-amount"><span
                                 class="ingredient-amount-number">{{ i.Amount }}</span>{% if i.Unit is whiteSpacedUnit %} {% endif %}<span
                                 class="ingredient-amount-unit">
-                                                    {%- if i.Unit %}{{ i.Unit }}{% endif -%}</span> </span><span
+                                                    {%- if i.Unit %}{{ i.Unit }}{% endif -%}</span></span><span
                                 class="ingredient-name">
                                                 {{- i.Name -}}
                                             </span></div>

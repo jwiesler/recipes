@@ -145,11 +145,23 @@ body, .modal-content {
   color: #ffffff;
 }
 
+:not(#recipe-edit-form) .ingredient-amount {
+  width: 40%;
+  text-align: right;
+}
+:not(#recipe-edit-form) .ingredient-name {
+  width: 60%;
+  text-align: left;
+}
+
 .ingredients-table {
   width: 100%;
 }
 .ingredients-table > .ingredients-row-wrapper {
   display: flex;
+  padding: 0.5em;
+  text-align: right;
+  align-items: center;
 }
 .ingredients-table > .ingredients-row-wrapper:nth-child(odd) {
   border-radius: 0.5rem;
@@ -169,15 +181,8 @@ body, .modal-content {
 .ingredients-table > .ingredients-row-wrapper:nth-child(odd) .tool-button:disabled {
   opacity: 0.65;
 }
-.ingredients-table > .ingredients-row-wrapper .ingredient-amount {
-  width: 40%;
-  text-align: right;
-  padding: 0.5em 0.25em 0.5em 0.5em;
-}
 .ingredients-table > .ingredients-row-wrapper .ingredient-name {
-  width: 60%;
   text-align: left;
-  padding: 0.5em 0.5em 0.5em 0.25em;
 }
 
 input[type=number].remove-number-arrows {
@@ -235,20 +240,20 @@ textarea#instructions {
   min-height: 20em;
 }
 
-.editable .ingredient-amount, .editable .ingredient-name {
+#recipe-edit-form .ingredient-amount, #recipe-edit-form .ingredient-name {
   display: flex;
   align-items: center;
 }
-.editable .ingredient-unit-input {
+#recipe-edit-form .ingredient-unit-input {
   flex-basis: 4.3em;
   flex-shrink: 0;
 }
-.editable .ingredient-amount-input {
+#recipe-edit-form .ingredient-amount-input {
   flex-basis: 4em;
-  flex-grow: 1;
+  flex-shrink: 0;
 }
-.editable .ingredient-name-input {
-  width: 100%;
+#recipe-edit-form .ingredient-name {
+  flex-grow: 1;
 }
 
 .nav-button, .tool-button, .text-button {
@@ -341,7 +346,7 @@ textarea#instructions {
   margin-right: 0.5em;
 }
 
-.toolbar-center input.editable, .submit-button, .delete-recipe-button {
+.toolbar-center, .submit-button, .delete-recipe-button {
   width: 100%;
 }
 

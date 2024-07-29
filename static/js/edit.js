@@ -52,7 +52,7 @@ function initSection(section, defaultRow, importInformation) {
         initListenersForRow(row)
     })
     const addButton = section.querySelector(".button-add")
-    addButton.click(function () {
+    addButton.addEventListener("click", function () {
         addRowToTable(section.ingredientsTable)
     })
 }

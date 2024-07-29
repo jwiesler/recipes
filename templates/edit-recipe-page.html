@@ -41,16 +41,15 @@
 {% endblock navbar %}
 
 {%- macro ingredientRow(name, amount, unit) -%}
-<div class="ingredients-row-wrapper hover-show-display-base">
-    <div class="ingredient-amount vspace-between-small-r">
-        <div class="toolbar toolbar-left toolbar-1 vspace-between-small">
-            <button tabindex="-1" class="tool-button button-delete fa fa-times"></button>
-        </div>
-        <input class="ingredient-amount-input editable" placeholder="Menge" value="{{ amount }}"/><input
-            class="ingredient-unit-input editable" value="{{ unit }}" placeholder="Einheit"/>
+<div class="ingredients-row-wrapper hover-show-display-base vspace-between-small-r">
+    <div class="toolbar toolbar-left toolbar-1 vspace-between-small">
+        <button tabindex="-1" class="tool-button button-delete fa fa-times"></button>
     </div>
+    <input class="ingredient-amount-input" placeholder="Menge" value="{{ amount }}"/>
+    <input
+            class="ingredient-unit-input" value="{{ unit }}" placeholder="Einheit"/>
     <div class="ingredient-name vspace-between-small">
-        <input class="ingredient-name-input editable" placeholder="Zutat" value="{{ name }}"/>
+        <input class="ingredient-name-input" placeholder="Zutat" value="{{ name }}"/>
         <div class="toolbar toolbar-right toolbar-1 toolbar hover-show-display vspace-between-small">
             <button tabindex="-1" class="tool-button button-up fa fa-arrow-up"></button>
             <button tabindex="-1" class="tool-button button-down fa fa-arrow-down"></button>
@@ -65,7 +64,7 @@
         <div class="toolbar toolbar-left toolbar-3 vspace-between-small">
             <button tabindex="-1" class="tool-button button-delete fa fa-times"></button>
         </div>
-        <div class="toolbar-center"><input class="h3 ingredients-section-name-input editable" value="{{ heading }}"
+        <div class="toolbar-center"><input class="h3 ingredients-section-name-input" value="{{ heading }}"
                                            placeholder="Überschrift"/></div>
         <div class="toolbar toolbar-right toolbar-3 vspace-between-small">
             <button tabindex="-1" class="tool-button button-import fa fa-download" data-bs-toggle="modal"
@@ -87,13 +86,13 @@
 
 {% block content %}
 <div class="content">
-    <div class="recipe-container mx-auto editable">
+    <div class="recipe-container mx-auto">
         <div id="recipe-edit-form">
             <div class="spacing-between-large">
                 <div class="spacing-between-small">
-                    <input id="name" class="h1 editable" placeholder="Name" autocomplete="off" {% if recipe %}
+                    <input id="name" class="h1" placeholder="Name" autocomplete="off" {% if recipe %}
                            value="{{ recipe.Name }}" {% endif %}/>
-                    <p class="text-content"><input id="description" class="recipe-description" class="editable"
+                    <p class="text-content"><input id="description" class="recipe-description"
                                                    placeholder="Beschreibung" autocomplete="off" {% if recipe %}
                                                    value="{{ recipe.Description }}" {% endif %}/></p>
                     <div>
@@ -122,14 +121,14 @@
                 <div class="spacing-between-small">
                     <h2>Zubereitung</h2>
                     <div class="section">
-                        <textarea id="instructions" class="editable" autocomplete="off" placeholder="Zubereitung">{% if recipe %}{{ recipe.Instructions }}{% endif %}</textarea>
+                        <textarea id="instructions" autocomplete="off" placeholder="Zubereitung">{% if recipe %}{{ recipe.Instructions }}{% endif %}</textarea>
                     </div>
                 </div>
 
                 <div class="spacing-between-small">
                     <h2>Quelle</h2>
                     <div class="section">
-                        <textarea id="source" class="editable" autocomplete="off" placeholder="Quelle">{% if recipe %}{{ recipe.Source }}{% endif %}</textarea>
+                        <textarea id="source" autocomplete="off" placeholder="Quelle">{% if recipe %}{{ recipe.Source }}{% endif %}</textarea>
                     </div>
                 </div>
 
@@ -137,7 +136,7 @@
                     <h2>Kategorien</h2>
                     <p>Mit Komma getrennte Liste der Kategorien.</p>
                     <div class="section">
-                        <textarea id="categories" class="editable" autocomplete="off"
+                        <textarea id="categories" autocomplete="off"
                                   placeholder="Hauptgericht, Dessert, Kuchen">{% if recipe %}{{ recipe.Categories | join(sep=', ') }}{% endif %}</textarea>
                     </div>
                 </div>
