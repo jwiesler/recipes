@@ -1,14 +1,14 @@
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
-use std::future::{Future, ready};
+use std::future::{ready, Future};
 use std::ops::Deref;
 use std::path::PathBuf;
 use std::pin::Pin;
 
 use actix_identity::Identity;
 use actix_session::Session;
-use actix_web::{FromRequest, HttpMessage, HttpRequest, web};
 use actix_web::dev::Payload;
+use actix_web::{web, FromRequest, HttpMessage, HttpRequest};
 use serde::{Deserialize, Serialize};
 use tokio::fs::read_to_string;
 use tokio::sync::{Mutex, RwLock};
@@ -224,7 +224,6 @@ impl Users {
     #[instrument(skip(self, req))]
     pub async fn invalidate_sessions(&self, login: String, req: &HttpRequest) -> Result<(), Error> {
         let mut io = self.io.lock().await;
-        dbg!(&login);
         let (write, version) = {
             let mut users = self.index.write().await;
             let user = users.get_mut(&login).ok_or(Error::NotFound)?;
@@ -233,7 +232,6 @@ impl Users {
             (io.prepare(&users), version)
         };
 
-        dbg!(&write.0);
         io.write(&write).await?;
         store_session_info(req, login, version);
         Ok(())

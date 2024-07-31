@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
-use actix_web::HttpRequest;
 use actix_web::web::{Data, Form, Html, Json, Path, Redirect, ServiceConfig};
+use actix_web::HttpRequest;
 use serde::Deserialize;
 use serde_json::{json, Value};
 use tracing::instrument;
@@ -209,8 +209,8 @@ pub(crate) fn configure(c: &mut ServiceConfig) {
 mod tests {
     use std::path::Path;
 
-    use actix_web::{App, http::header::ContentType, test};
     use actix_web::web::Data;
+    use actix_web::{http::header::ContentType, test, App};
     use tokio::sync::RwLock;
 
     use crate::auth::Users;
