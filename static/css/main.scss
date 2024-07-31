@@ -483,6 +483,10 @@ textarea {
   @include button-effects(#ff8c8c);
 }
 
+.navbar {
+  --bs-navbar-padding-x: 1rem;
+}
+
 .navbar-dark .navbar-brand {
   @include button-effects(#ffffff);
 }

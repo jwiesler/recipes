@@ -405,6 +405,10 @@ textarea#instructions {
   color: rgba(255, 140, 140, 0.75);
 }
 
+.navbar {
+  --bs-navbar-padding-x: 1rem;
+}
+
 .navbar-dark .navbar-brand {
   color: rgba(255, 255, 255, 0.6);
 }
