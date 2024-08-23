@@ -1,1 +1,7 @@
-{}
+{
+  "admin": {
+    "password": "$2b$12$ry0JJNM.Xv3FVo3xp0ulFeKRu/OKZTXboVOphz6qAztvB6ECXutqW",
+    "locked": false,
+    "version": 0
+  }
+}

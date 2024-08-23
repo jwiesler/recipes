@@ -1,6 +1,6 @@
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
-use std::future::{ready, Future};
+use std::future::Future;
 use std::ops::Deref;
 use std::path::PathBuf;
 use std::pin::Pin;
@@ -20,38 +20,23 @@ use crate::error::Error;
 use crate::recipes::handle_io_error;
 
 #[derive(Debug)]
-pub struct NoPermission;
+pub struct NoPermission(pub Option<String>);
 #[derive(Debug)]
 pub struct WritePermission(#[allow(unused)] pub String);
 
-enum Permission {
-    None,
-    Write,
-}
-
-trait PermissionCheck {
-    fn required() -> Permission;
-
-    fn from_user(user: String) -> Self;
+trait PermissionCheck: Sized {
+    fn from_user(user: Option<String>) -> Option<Self>;
 }
 
 impl PermissionCheck for NoPermission {
-    fn required() -> Permission {
-        Permission::None
-    }
-
-    fn from_user(_: String) -> Self {
-        Self
+    fn from_user(user: Option<String>) -> Option<Self> {
+        Some(Self(user))
     }
 }
 
 impl PermissionCheck for WritePermission {
-    fn required() -> Permission {
-        Permission::Write
-    }
-
-    fn from_user(user: String) -> Self {
-        Self(user)
+    fn from_user(user: Option<String>) -> Option<Self> {
+        user.map(Self)
     }
 }
 
@@ -64,10 +49,10 @@ async fn user_from_request(
     identity: Option<Identity>,
     session: &Session,
     context: &Context,
-) -> Result<String, Error> {
-    let identity = identity.ok_or(Error::Unauthorized)?;
+) -> Option<String> {
+    let identity = identity?;
     let user_id = identity.id().unwrap();
-    let token_version = session.get(TOKEN_VERSION_IDENTIFIER).ok().flatten();
+    let token_version = session.get(TOKEN_VERSION_IDENTIFIER).ok().flatten()?;
 
     context
         .users
@@ -77,6 +62,7 @@ async fn user_from_request(
         .inspect_err(|_| {
             identity.logout();
         })
+        .ok()
 }
 
 pub fn store_session_info(request: &HttpRequest, user_id: String, token_version: u32) {
@@ -96,24 +82,19 @@ where
     type Future = Pin<Box<dyn Future<Output = Result<Authenticated<T>, actix_web::Error>>>>;
 
     fn from_request(req: &HttpRequest, payload: &mut Payload) -> Self::Future {
-        match T::required() {
-            Permission::None => Box::pin(ready(Ok(Authenticated(T::from_user(String::new()))))),
-            Permission::Write => {
-                let identity = Identity::from_request(req, payload).into_inner().ok();
-                let session = Session::from_request(req, payload).into_inner().unwrap();
-                let context = req
-                    .app_data::<web::Data<Context>>()
-                    .expect("context not set")
-                    .deref()
-                    .clone();
-                Box::pin(async move {
-                    user_from_request(identity, &session, &context)
-                        .await
-                        .map(|u| Authenticated(T::from_user(u)))
-                        .map_err(Into::into)
-                })
-            }
-        }
+        let identity = Identity::from_request(req, payload).into_inner().ok();
+        let session = Session::from_request(req, payload).into_inner().unwrap();
+        let context = req
+            .app_data::<web::Data<Context>>()
+            .expect("context not set")
+            .deref()
+            .clone();
+        Box::pin(async move {
+            let user = user_from_request(identity, &session, &context).await;
+            T::from_user(user)
+                .map(Authenticated)
+                .ok_or(Error::Unauthorized.into())
+        })
     }
 }
 
@@ -141,7 +122,7 @@ impl Io {
     }
 }
 
-#[instrument(skip(password))]
+#[instrument(level = "debug", skip(password))]
 async fn bcrypt_hash(password: impl AsRef<[u8]> + Send + 'static, bcrypt_cost: u32) -> String {
     spawn_blocking(move || bcrypt::hash(password, bcrypt_cost))
         .await
@@ -149,7 +130,7 @@ async fn bcrypt_hash(password: impl AsRef<[u8]> + Send + 'static, bcrypt_cost: u
         .expect("bcrypt failed")
 }
 
-#[instrument(skip(password))]
+#[instrument(level = "debug", skip(password))]
 async fn bcrypt_verify(password: impl AsRef<[u8]> + Send + 'static, password_hash: String) -> bool {
     spawn_blocking(move || bcrypt::verify(password, &password_hash))
         .await
@@ -176,7 +157,7 @@ impl Users {
 }
 
 impl Users {
-    #[instrument(skip(self, password))]
+    #[instrument(skip(self, password), err)]
     pub async fn register(&self, login: String, password: String) -> Result<(), Error> {
         if login.chars().count() < 4 {
             return Err(Error::UserNameTooShort);
@@ -202,7 +183,7 @@ impl Users {
         }
     }
 
-    #[instrument(skip(self, password, req))]
+    #[instrument(skip(self, password, req), err)]
     pub async fn login(
         &self,
         login: String,
@@ -221,7 +202,7 @@ impl Users {
         Ok(())
     }
 
-    #[instrument(skip(self, req))]
+    #[instrument(skip(self, req), err)]
     pub async fn invalidate_sessions(&self, login: String, req: &HttpRequest) -> Result<(), Error> {
         let mut io = self.io.lock().await;
         let (write, version) = {
@@ -237,17 +218,62 @@ impl Users {
         Ok(())
     }
 
-    #[instrument(skip(self))]
-    pub async fn check_authenticated(
-        &self,
-        login: &str,
-        token_version: Option<u32>,
-    ) -> Result<(), Error> {
+    #[instrument(level = "debug", skip(self))]
+    pub async fn check_authenticated(&self, login: &str, token_version: u32) -> Result<(), Error> {
         let users = self.index.read().await;
         users
             .get(login)
-            .filter(|u| !u.locked && Some(u.version) == token_version)
+            .filter(|u| !u.locked && u.version == token_version)
             .map(|_| ())
             .ok_or(Error::Unauthorized)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use actix_web::cookie::Cookie;
+    use actix_web::http::header::SET_COOKIE;
+    use actix_web::http::{Method, StatusCode};
+    use actix_web::test;
+
+    use crate::routes::tests::app;
+    use crate::setup_tracing;
+
+    #[actix_web::test]
+    async fn test_auth_flow() {
+        setup_tracing();
+        let app = test::init_service(app().await).await;
+
+        let req = test::TestRequest::with_uri("/login")
+            .method(Method::GET)
+            .to_request();
+        let resp = test::call_and_read_body(&app, req).await;
+        let body = std::str::from_utf8(&resp).unwrap();
+        assert!(!body.contains("admin"));
+
+        let req = test::TestRequest::with_uri("/login")
+            .method(Method::POST)
+            .set_form(serde_json::json!({
+                "user": "admin",
+                "password": "adminadmin"
+            }))
+            .to_request();
+        let resp = test::call_service(&app, req).await;
+        assert_eq!(resp.status(), StatusCode::SEE_OTHER);
+
+        let cookie = resp
+            .headers()
+            .get(SET_COOKIE)
+            .expect("expecting set cookie header");
+        let cookie = Cookie::parse_encoded(cookie.to_str().unwrap()).unwrap();
+        let req = test::TestRequest::with_uri("/login")
+            .method(Method::GET)
+            .cookie(cookie)
+            .to_request();
+        let resp = test::call_service(&app, req).await;
+        assert_eq!(resp.status(), StatusCode::OK);
+        let body = test::read_body(resp).await;
+        let body = std::str::from_utf8(&body).unwrap();
+        assert!(body.contains("admin"));
     }
 }

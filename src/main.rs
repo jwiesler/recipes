@@ -2,22 +2,18 @@ use std::path::Path;
 use std::time::Duration;
 
 use actix_files::Files;
-use actix_identity::config::LogoutBehaviour;
-use actix_identity::IdentityMiddleware;
-use actix_session::config::CookieContentSecurity;
-use actix_session::storage::CookieSessionStore;
-use actix_session::SessionMiddleware;
 use actix_web::body::MessageBody;
-use actix_web::cookie::{Key, SameSite};
 use actix_web::dev::{ServiceRequest, ServiceResponse};
 use actix_web::web::Data;
 use actix_web::{middleware, web, App, Error, HttpResponse, HttpServer};
 use clap::Parser;
 use notify::{RecursiveMode, Watcher};
 use tokio::sync::RwLock;
+use tracing::metadata::LevelFilter;
 use tracing::{info, Span};
-use tracing_actix_web::{DefaultRootSpanBuilder, RootSpanBuilder, TracingLogger};
+use tracing_actix_web::{DefaultRootSpanBuilder, RootSpanBuilder};
 use tracing_subscriber::fmt::format::FmtSpan;
+use tracing_subscriber::EnvFilter;
 
 use crate::auth::Users;
 use crate::context::Context;
@@ -28,21 +24,15 @@ mod auth;
 mod context;
 mod error;
 mod id;
+mod middlewares;
 mod recipe;
 mod recipes;
 mod routes;
 mod templates;
 mod unit;
 
-#[derive(Parser)]
-struct Cli {
-    address: String,
-    #[clap(long)]
-    cookies_key: String,
-}
-
 #[derive(Default)]
-struct DomainRootSpanBuilder;
+pub(crate) struct DomainRootSpanBuilder;
 
 impl RootSpanBuilder for DomainRootSpanBuilder {
     fn on_request_start(request: &ServiceRequest) -> Span {
@@ -54,11 +44,27 @@ impl RootSpanBuilder for DomainRootSpanBuilder {
     }
 }
 
-#[actix_web::main]
-async fn main() -> std::io::Result<()> {
+#[derive(Parser)]
+struct Cli {
+    address: String,
+    #[clap(long)]
+    cookies_key: String,
+}
+
+pub(crate) fn setup_tracing() {
     tracing_subscriber::fmt()
         .with_span_events(FmtSpan::NEW | FmtSpan::CLOSE)
+        .with_env_filter(
+            EnvFilter::builder()
+                .with_default_directive(LevelFilter::INFO.into())
+                .from_env_lossy(),
+        )
         .init();
+}
+
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    setup_tracing();
 
     let Cli {
         address,
@@ -104,23 +110,11 @@ async fn main() -> std::io::Result<()> {
     };
 
     let server = HttpServer::new(move || {
-        let cookies_middleware = IdentityMiddleware::builder()
-            .visit_deadline(Some(Duration::from_secs(30 * 24 * 60 * 60)))
-            .logout_behaviour(LogoutBehaviour::PurgeSession)
-            .build();
-        let session_middleware = SessionMiddleware::builder(
-            CookieSessionStore::default(),
-            Key::from(cookies_key.as_bytes()),
-        )
-        .cookie_name("recipes-session".into())
-        .cookie_http_only(true)
-        .cookie_content_security(CookieContentSecurity::Private)
-        .cookie_secure(true)
-        .cookie_same_site(SameSite::Strict)
-        .build();
+        let cookies_middleware = middlewares::identity();
+        let session_middleware = middlewares::session(cookies_key.as_bytes());
         App::new()
-            .wrap(TracingLogger::<DomainRootSpanBuilder>::new())
             .app_data(context.clone())
+            .wrap(middlewares::tracing())
             .wrap(middleware::Compress::default())
             .wrap(cookies_middleware)
             .wrap(session_middleware)
