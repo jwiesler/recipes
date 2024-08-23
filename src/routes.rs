@@ -94,7 +94,7 @@ async fn page_create(ctx: Data<Context>, _: Authenticated<NoPermission>) -> Html
 }
 
 #[actix_web::get("/edit/{recipe}")]
-#[instrument(skip(ctx), fields(user=_u.0.0))]
+#[instrument(skip(ctx, _u), fields(user=_u.0.0))]
 async fn page_edit(
     ctx: Data<Context>,
     id: Path<String>,
@@ -118,7 +118,7 @@ async fn page_edit(
 }
 
 #[actix_web::post("/create")]
-#[instrument(skip(ctx, recipe), fields(name=%recipe.name, user=_u.0.0))]
+#[instrument(skip(ctx, recipe, _u), fields(name=%recipe.name, user=_u.0.0))]
 async fn create(
     ctx: Data<Context>,
     _u: Authenticated<WritePermission>,
@@ -135,7 +135,7 @@ async fn create(
 }
 
 #[actix_web::post("/edit/{recipe}")]
-#[instrument(skip(ctx, recipe), fields(name=%recipe.name, user=_u.0.0))]
+#[instrument(skip(ctx, recipe, _u), fields(name=%recipe.name, user=_u.0.0))]
 async fn edit(
     ctx: Data<Context>,
     _u: Authenticated<WritePermission>,
@@ -154,7 +154,7 @@ async fn edit(
 }
 
 #[actix_web::post("/delete/{recipe}")]
-#[instrument(skip(ctx), fields(user=_u.0.0))]
+#[instrument(skip(ctx, _u), fields(user=_u.0.0))]
 async fn delete(
     ctx: Data<Context>,
     _u: Authenticated<WritePermission>,
