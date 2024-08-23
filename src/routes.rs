@@ -6,14 +6,14 @@ use serde::Deserialize;
 use serde_json::{json, Value};
 use tracing::instrument;
 
-use crate::auth::{Authenticated, WritePermission};
+use crate::auth::{Authenticated, NoPermission, WritePermission};
 use crate::context::Context;
 use crate::error::Error;
 use crate::id::to_id_string;
-use crate::recipe::RawRecipe;
+use crate::recipe::{bake_string, RawRecipe};
 
 #[actix_web::get("/")]
-async fn page_home(ctx: Data<Context>) -> Html {
+async fn page_home(ctx: Data<Context>, _: Authenticated<NoPermission>) -> Html {
     let recipes: HashMap<String, Value> = ctx
         .recipes.list().await.iter()
         .map(|(k, v)| (k.clone(), json!({
@@ -36,9 +36,13 @@ async fn page_home(ctx: Data<Context>) -> Html {
 }
 
 #[actix_web::get("/login")]
-async fn page_login(ctx: Data<Context>) -> Html {
+async fn page_login(
+    ctx: Data<Context>,
+    Authenticated(NoPermission(user)): Authenticated<NoPermission>,
+) -> Html {
     let context = json!({
         "base_url": "",
+        "user": user.as_ref().map(|u| Value::String(bake_string(u))).unwrap_or(Value::Null),
     });
 
     let content = ctx
@@ -52,7 +56,11 @@ async fn page_login(ctx: Data<Context>) -> Html {
 
 #[actix_web::get("/recipe/{recipe}")]
 #[instrument(skip(ctx))]
-async fn page_recipe(ctx: Data<Context>, id: Path<String>) -> Result<Html, Error> {
+async fn page_recipe(
+    ctx: Data<Context>,
+    id: Path<String>,
+    _: Authenticated<NoPermission>,
+) -> Result<Html, Error> {
     let id = id.into_inner().to_lowercase();
     let recipe = ctx.recipes.get(&id).await?;
     let value = serde_json::to_value(recipe.bake()).unwrap();
@@ -72,7 +80,7 @@ async fn page_recipe(ctx: Data<Context>, id: Path<String>) -> Result<Html, Error
 }
 
 #[actix_web::get("/create")]
-async fn page_create(ctx: Data<Context>) -> Html {
+async fn page_create(ctx: Data<Context>, _: Authenticated<NoPermission>) -> Html {
     let context = json!({
         "base_url": "",
     });
@@ -86,8 +94,12 @@ async fn page_create(ctx: Data<Context>) -> Html {
 }
 
 #[actix_web::get("/edit/{recipe}")]
-#[instrument(skip(ctx))]
-async fn page_edit(ctx: Data<Context>, id: Path<String>) -> Result<Html, Error> {
+#[instrument(skip(ctx), fields(user=_u.0.0))]
+async fn page_edit(
+    ctx: Data<Context>,
+    id: Path<String>,
+    _u: Authenticated<NoPermission>,
+) -> Result<Html, Error> {
     let id = id.into_inner().to_lowercase();
     let recipe = ctx.recipes.get(&id).await?;
     let value = serde_json::to_value(recipe).unwrap();
@@ -106,7 +118,7 @@ async fn page_edit(ctx: Data<Context>, id: Path<String>) -> Result<Html, Error> 
 }
 
 #[actix_web::post("/create")]
-#[instrument(skip(ctx, recipe), fields(name=%recipe.name))]
+#[instrument(skip(ctx, recipe), fields(name=%recipe.name, user=_u.0.0))]
 async fn create(
     ctx: Data<Context>,
     _u: Authenticated<WritePermission>,
@@ -123,7 +135,7 @@ async fn create(
 }
 
 #[actix_web::post("/edit/{recipe}")]
-#[instrument(skip(ctx, recipe), fields(name=%recipe.name))]
+#[instrument(skip(ctx, recipe), fields(name=%recipe.name, user=_u.0.0))]
 async fn edit(
     ctx: Data<Context>,
     _u: Authenticated<WritePermission>,
@@ -142,7 +154,7 @@ async fn edit(
 }
 
 #[actix_web::post("/delete/{recipe}")]
-#[instrument(skip(ctx))]
+#[instrument(skip(ctx), fields(user=_u.0.0))]
 async fn delete(
     ctx: Data<Context>,
     _u: Authenticated<WritePermission>,
@@ -206,11 +218,13 @@ pub(crate) fn configure(c: &mut ServiceConfig) {
 }
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     use std::path::Path;
 
+    use actix_web::body::MessageBody;
+    use actix_web::dev::{ServiceFactory, ServiceRequest, ServiceResponse};
     use actix_web::web::Data;
-    use actix_web::{http::header::ContentType, test, App};
+    use actix_web::{http::header::ContentType, test, App, Error};
     use tokio::sync::RwLock;
 
     use crate::auth::Users;
@@ -220,7 +234,7 @@ mod tests {
 
     use super::configure;
 
-    async fn make_app_data() -> Data<Context> {
+    pub(crate) async fn make_app_data() -> Data<Context> {
         let recipes = Recipes::load_dir(Path::new("tests/recipes")).await;
         let users = Users::load(Path::new("tests/users.json").into()).await;
         let templates = RwLock::new(Templates::load("templates/**/*").await);
@@ -231,14 +245,26 @@ mod tests {
         })
     }
 
+    pub(crate) async fn app() -> App<
+        impl ServiceFactory<
+            ServiceRequest,
+            Config = (),
+            Response = ServiceResponse<impl MessageBody>,
+            Error = Error,
+            InitError = (),
+        >,
+    > {
+        App::new()
+            .app_data(make_app_data().await)
+            .wrap(crate::middlewares::tracing())
+            .wrap(crate::middlewares::identity())
+            .wrap(crate::middlewares::session(&[0; 64]))
+            .configure(configure)
+    }
+
     #[actix_web::test]
     async fn test_home_page() {
-        let app = test::init_service(
-            App::new()
-                .configure(configure)
-                .app_data(make_app_data().await),
-        )
-        .await;
+        let app = test::init_service(app().await).await;
         let req = test::TestRequest::with_uri("/")
             .insert_header(ContentType::plaintext())
             .to_request();
@@ -248,12 +274,7 @@ mod tests {
 
     #[actix_web::test]
     async fn test_home_login() {
-        let app = test::init_service(
-            App::new()
-                .configure(configure)
-                .app_data(make_app_data().await),
-        )
-        .await;
+        let app = test::init_service(app().await).await;
         let req = test::TestRequest::with_uri("/login")
             .insert_header(ContentType::plaintext())
             .to_request();
@@ -263,12 +284,7 @@ mod tests {
 
     #[actix_web::test]
     async fn test_create_page() {
-        let app = test::init_service(
-            App::new()
-                .configure(configure)
-                .app_data(make_app_data().await),
-        )
-        .await;
+        let app = test::init_service(app().await).await;
         let req = test::TestRequest::with_uri("/create")
             .insert_header(ContentType::plaintext())
             .to_request();
@@ -278,12 +294,7 @@ mod tests {
 
     #[actix_web::test]
     async fn test_recipe_page() {
-        let app = test::init_service(
-            App::new()
-                .configure(configure)
-                .app_data(make_app_data().await),
-        )
-        .await;
+        let app = test::init_service(app().await).await;
         let req = test::TestRequest::with_uri("/recipe/test-1")
             .insert_header(ContentType::plaintext())
             .to_request();
@@ -293,12 +304,7 @@ mod tests {
 
     #[actix_web::test]
     async fn test_edit_page() {
-        let app = test::init_service(
-            App::new()
-                .configure(configure)
-                .app_data(make_app_data().await),
-        )
-        .await;
+        let app = test::init_service(app().await).await;
         let req = test::TestRequest::with_uri("/edit/test-1")
             .insert_header(ContentType::plaintext())
             .to_request();

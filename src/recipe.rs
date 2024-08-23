@@ -115,7 +115,7 @@ fn bake_md_string(s: &str) -> String {
     markdown_to_html(s, &options)
 }
 
-fn bake_string(s: &str) -> String {
+pub(crate) fn bake_string(s: &str) -> String {
     tera::escape_html(s)
 }
 
