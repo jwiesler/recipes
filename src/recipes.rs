@@ -10,7 +10,7 @@ use crate::error::Error;
 use crate::id::to_id_string;
 use crate::recipe::RawRecipe;
 
-pub fn handle_io_error(path: &Path, e: std::io::Error) -> Error {
+pub fn handle_io_error(path: &Path, e: &std::io::Error) -> Error {
     error!("Failed to write {path:?}: {e}");
     Error::Internal
 }
@@ -53,13 +53,13 @@ impl RecipesIo {
     async fn write(&mut self, write: &Write) -> Result<(), Error> {
         tokio::fs::write(&write.path, &write.content)
             .await
-            .map_err(|e| handle_io_error(&write.path, e))
+            .map_err(|e| handle_io_error(&write.path, &e))
     }
 
     async fn delete(&mut self, delete: &Delete) -> Result<(), Error> {
         tokio::fs::remove_file(&delete.path)
             .await
-            .map_err(|e| handle_io_error(&delete.path, e))
+            .map_err(|e| handle_io_error(&delete.path, &e))
     }
 }
 
@@ -99,7 +99,7 @@ impl Recipes {
         }
     }
 
-    pub async fn list(&self) -> RwLockReadGuard<HashMap<String, RawRecipe>> {
+    pub async fn list(&self) -> RwLockReadGuard<'_, HashMap<String, RawRecipe>> {
         self.recipes.read().await
     }
 

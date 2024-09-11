@@ -26,13 +26,13 @@ async fn page_home(ctx: Data<Context>, _: Authenticated<NoPermission>) -> Html {
         "recipes": recipes
     });
 
-    let content = ctx
+    let rendered = ctx
         .templates
         .read()
         .await
         .render("home.html", context)
         .unwrap();
-    Html::new(content)
+    Html::new(rendered)
 }
 
 #[actix_web::get("/login")]
@@ -42,16 +42,16 @@ async fn page_login(
 ) -> Html {
     let context = json!({
         "base_url": "",
-        "user": user.as_ref().map(|u| Value::String(bake_string(u))).unwrap_or(Value::Null),
+        "user": user.as_ref().map_or(Value::Null, |u| Value::String(bake_string(u))),
     });
 
-    let content = ctx
+    let rendered = ctx
         .templates
         .read()
         .await
         .render("login.html", context)
         .unwrap();
-    Html::new(content)
+    Html::new(rendered)
 }
 
 #[actix_web::get("/recipe/{recipe}")]
@@ -70,13 +70,13 @@ async fn page_recipe(
         "recipe": value,
     });
 
-    let content = ctx
+    let rendered = ctx
         .templates
         .read()
         .await
         .render("recipe-page.html", context)
         .unwrap();
-    Ok(Html::new(content))
+    Ok(Html::new(rendered))
 }
 
 #[actix_web::get("/create")]
@@ -84,21 +84,21 @@ async fn page_create(ctx: Data<Context>, _: Authenticated<NoPermission>) -> Html
     let context = json!({
         "base_url": "",
     });
-    let content = ctx
+    let rendered = ctx
         .templates
         .read()
         .await
         .render("edit-recipe-page.html", context)
         .unwrap();
-    Html::new(content)
+    Html::new(rendered)
 }
 
 #[actix_web::get("/edit/{recipe}")]
-#[instrument(skip(ctx, _u), fields(user=_u.0.0))]
+#[instrument(skip(ctx, u), fields(user=u.0.0))]
 async fn page_edit(
     ctx: Data<Context>,
     id: Path<String>,
-    _u: Authenticated<NoPermission>,
+    u: Authenticated<NoPermission>,
 ) -> Result<Html, Error> {
     let id = id.into_inner().to_lowercase();
     let recipe = ctx.recipes.get(&id).await?;
@@ -108,20 +108,20 @@ async fn page_edit(
         "id": id,
         "recipe": value,
     });
-    let content = ctx
+    let rendered = ctx
         .templates
         .read()
         .await
         .render("edit-recipe-page.html", context)
         .unwrap();
-    Ok(Html::new(content))
+    Ok(Html::new(rendered))
 }
 
 #[actix_web::post("/create")]
-#[instrument(skip(ctx, recipe, _u), fields(name=%recipe.name, user=_u.0.0))]
+#[instrument(skip(ctx, recipe, u), fields(name=%recipe.name, user=u.0.0))]
 async fn create(
     ctx: Data<Context>,
-    _u: Authenticated<WritePermission>,
+    u: Authenticated<WritePermission>,
     Json(mut recipe): Json<RawRecipe>,
 ) -> Result<Redirect, Error> {
     recipe.clean();
@@ -135,10 +135,10 @@ async fn create(
 }
 
 #[actix_web::post("/edit/{recipe}")]
-#[instrument(skip(ctx, recipe, _u), fields(name=%recipe.name, user=_u.0.0))]
+#[instrument(skip(ctx, recipe, u), fields(name=%recipe.name, user=u.0.0))]
 async fn edit(
     ctx: Data<Context>,
-    _u: Authenticated<WritePermission>,
+    u: Authenticated<WritePermission>,
     id: Path<String>,
     Json(mut recipe): Json<RawRecipe>,
 ) -> Result<Redirect, Error> {
@@ -154,10 +154,10 @@ async fn edit(
 }
 
 #[actix_web::post("/delete/{recipe}")]
-#[instrument(skip(ctx, _u), fields(user=_u.0.0))]
+#[instrument(skip(ctx, u), fields(user=u.0.0))]
 async fn delete(
     ctx: Data<Context>,
-    _u: Authenticated<WritePermission>,
+    u: Authenticated<WritePermission>,
     id: Path<String>,
 ) -> Result<Redirect, Error> {
     let id = id.into_inner();

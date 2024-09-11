@@ -32,13 +32,13 @@ impl Display for Error {
 impl ResponseError for Error {
     fn status_code(&self) -> StatusCode {
         match self {
-            Error::AlreadyExists => StatusCode::BAD_REQUEST,
             Error::NotFound => StatusCode::NOT_FOUND,
             Error::Internal => StatusCode::INTERNAL_SERVER_ERROR,
-            Error::EmptyId => StatusCode::BAD_REQUEST,
             Error::Unauthorized => StatusCode::UNAUTHORIZED,
-            Error::UserNameTooShort => StatusCode::BAD_REQUEST,
-            Error::PasswordTooShort => StatusCode::BAD_REQUEST,
+            Error::EmptyId
+            | Error::AlreadyExists
+            | Error::UserNameTooShort
+            | Error::PasswordTooShort => StatusCode::BAD_REQUEST,
         }
     }
 }

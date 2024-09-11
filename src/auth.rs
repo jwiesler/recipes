@@ -110,7 +110,7 @@ struct Write(String);
 struct Io(PathBuf);
 
 impl Io {
-    fn prepare(&self, users: &HashMap<String, User>) -> Write {
+    fn prepare(users: &HashMap<String, User>) -> Write {
         let content = serde_json::to_string(users).unwrap();
         Write(content)
     }
@@ -118,7 +118,7 @@ impl Io {
     async fn write(&mut self, write: &Write) -> Result<(), Error> {
         tokio::fs::write(&self.0, &write.0)
             .await
-            .map_err(|e| handle_io_error(&self.0, e))
+            .map_err(|e| handle_io_error(&self.0, &e))
     }
 }
 
@@ -176,7 +176,7 @@ impl Users {
                     locked: true,
                     version: 0,
                 });
-                let write = io.prepare(&users);
+                let write = Io::prepare(&users);
                 drop(users);
                 io.write(&write).await
             }
@@ -210,7 +210,7 @@ impl Users {
             let user = users.get_mut(&login).ok_or(Error::NotFound)?;
             user.version += 1;
             let version = user.version;
-            (io.prepare(&users), version)
+            (Io::prepare(&users), version)
         };
 
         io.write(&write).await?;
