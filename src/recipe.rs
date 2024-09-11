@@ -2,7 +2,7 @@ use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::str::FromStr;
 
-use comrak::{markdown_to_html, Options};
+use comrak::{markdown_to_html, ExtensionOptions, Options, ParseOptions, RenderOptions};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Deserialize, Serialize)]
@@ -82,7 +82,7 @@ impl RawRecipe {
 }
 
 fn clean(s: &mut String) {
-    *s = s.trim().to_string()
+    *s = s.trim().to_string();
 }
 
 #[derive(Deserialize, Serialize)]
@@ -108,9 +108,9 @@ pub struct BakedRecipe {
 
 fn bake_md_string(s: &str) -> String {
     let options = Options {
-        extension: Default::default(),
-        parse: Default::default(),
-        render: Default::default(),
+        extension: ExtensionOptions::default(),
+        parse: ParseOptions::default(),
+        render: RenderOptions::default(),
     };
     markdown_to_html(s, &options)
 }

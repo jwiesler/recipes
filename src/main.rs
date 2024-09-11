@@ -1,3 +1,8 @@
+#![deny(rust_2018_idioms, nonstandard_style)]
+#![warn(future_incompatible)]
+#![warn(clippy::pedantic)]
+#![allow(clippy::module_name_repetitions)]
+
 use std::path::Path;
 use std::time::Duration;
 
