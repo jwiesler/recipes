@@ -10,15 +10,14 @@
   "bumpVersion": "patch",
   "updatePinnedDependencies": false,
   "lockFileMaintenance": {
-    "automerge": true,
     "enabled": true
   },
+  "automerge": true,
   "patch": {
     "enabled": false
   },
   "packageRules": [
     {
-      "automerge": true,
       "matchUpdateTypes": [
         "minor",
         "patch"
