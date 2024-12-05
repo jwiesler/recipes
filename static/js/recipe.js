@@ -61,5 +61,16 @@ document.addEventListener("DOMContentLoaded", function () {
         if (isNaN(factor))
             return
         scaleAllByFactor(factor)
-    })
+    });
+
+    let screenLock = null;
+    navigator.wakeLock.request('screen').then(lock => {
+        screenLock = lock;
+    });
+
+    document.addEventListener('visibilitychange', async () => {
+        if (screenLock !== null && document.visibilityState === 'visible') {
+            screenLock = await navigator.wakeLock.request('screen');
+        }
+    });
 });
