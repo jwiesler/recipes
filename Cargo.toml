@@ -1,12 +1,12 @@
 [package]
 name = "recipes"
-version = "0.1.12"
+version = "0.1.13"
 edition = "2021"
 
 [dependencies]
 tera = "1.20.0"
 serde_json = "1.0"
-comrak = "0.33.0"
+comrak = "0.34.0"
 
 actix-web = "4.8.0"
 actix-files = "0.6.6"
