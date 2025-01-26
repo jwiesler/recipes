@@ -43,11 +43,11 @@ document.addEventListener("DOMContentLoaded", function () {
         })
     }
 
+    const localStorageKey = location.pathname;
     const scaleIngredientAmountInput = document.getElementById("scale-ingredient-amount")
-    const scaleIngredientButton = document.getElementById("scale-ingredient-button")
     const scaleIngredientSelect = document.getElementById("scale-ingredient-select")
 
-    scaleIngredientButton.addEventListener("click", function () {
+    function update() {
         const index = scaleIngredientSelect.selectedIndex
         if (index === -1)
             return
@@ -55,13 +55,37 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!amount || !scaleIngredientAmountInput.validity.valid)
             return
 
+        localStorage.setItem(localStorageKey, JSON.stringify({amount, index}))
+
         const option = scaleIngredientSelect.options[index]
         const totalAmount = option.getAttribute("data-total-amount")
         const factor = amount / totalAmount
         if (isNaN(factor))
             return
         scaleAllByFactor(factor)
-    });
+    }
+
+    scaleIngredientAmountInput.addEventListener("input", update);
+    scaleIngredientSelect.addEventListener("input", update);
+
+    function extractStorage() {
+        const storage = localStorage.getItem(localStorageKey)
+        if (storage !== null) {
+            try {
+                return JSON.parse(storage)
+            } catch (e) {
+            }
+        }
+        return null;
+    }
+
+    const storage = extractStorage();
+    if (storage !== null) {
+        const {amount, index} = storage;
+        scaleIngredientSelect.selectedIndex = index;
+        scaleIngredientAmountInput.value = amount;
+        update();
+    }
 
     let screenLock = null;
     navigator.wakeLock.request('screen').then(lock => {
