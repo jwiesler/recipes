@@ -7,7 +7,7 @@ function extendRow(row) {
             return parseFloat(this.amountSpan.innerText)
         },
         scaleAmountByFactor: function (factor) {
-            this.amountSpan.innerText = Math.round((this.originalAmount * factor + Number.EPSILON) * 1000) / 1000
+            this.amountSpan.innerText = factor === 1 ? this.originalAmount : Math.round((this.originalAmount * factor + Number.EPSILON) * 1000) / 1000
         },
     }
     row.ingredient.originalAmount = row.ingredient.parseAmount()
@@ -52,14 +52,14 @@ document.addEventListener("DOMContentLoaded", function () {
         if (index === -1)
             return
         const amount = scaleIngredientAmountInput.value
-        if (!amount || !scaleIngredientAmountInput.validity.valid)
+        if (!scaleIngredientAmountInput.validity.valid)
             return
 
         localStorage.setItem(localStorageKey, JSON.stringify({amount, index}))
 
         const option = scaleIngredientSelect.options[index]
         const totalAmount = option.getAttribute("data-total-amount")
-        const factor = amount / totalAmount
+        const factor = amount === "" ? 1 : amount / totalAmount
         if (isNaN(factor))
             return
         scaleAllByFactor(factor)
