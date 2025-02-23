@@ -1,16 +1,16 @@
 use std::collections::HashMap;
 
-use actix_web::web::{Data, Form, Html, Json, Path, Redirect, ServiceConfig};
 use actix_web::HttpRequest;
+use actix_web::web::{Data, Form, Html, Json, Path, Redirect, ServiceConfig};
 use serde::Deserialize;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use tracing::instrument;
 
 use crate::auth::{Authenticated, NoPermission, WritePermission};
 use crate::context::Context;
 use crate::error::Error;
 use crate::id::to_id_string;
-use crate::recipe::{bake_string, RawRecipe};
+use crate::recipe::{RawRecipe, bake_string};
 
 #[actix_web::get("/")]
 async fn page_home(ctx: Data<Context>, _: Authenticated<NoPermission>) -> Html {
@@ -199,7 +199,7 @@ async fn invalidate_sessions(
     u: Authenticated<WritePermission>,
     req: HttpRequest,
 ) -> Result<Redirect, Error> {
-    ctx.users.invalidate_sessions(u.0 .0, &req).await?;
+    ctx.users.invalidate_sessions(u.0.0, &req).await?;
     Ok(Redirect::to("/").see_other())
 }
 
@@ -224,7 +224,7 @@ pub(crate) mod tests {
     use actix_web::body::MessageBody;
     use actix_web::dev::{ServiceFactory, ServiceRequest, ServiceResponse};
     use actix_web::web::Data;
-    use actix_web::{http::header::ContentType, test, App, Error};
+    use actix_web::{App, Error, http::header::ContentType, test};
     use tokio::sync::RwLock;
 
     use crate::auth::Users;

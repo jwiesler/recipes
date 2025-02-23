@@ -1,5 +1,5 @@
-use std::collections::hash_map::Entry;
 use std::collections::HashMap;
+use std::collections::hash_map::Entry;
 use std::future::Future;
 use std::ops::Deref;
 use std::path::PathBuf;
@@ -8,7 +8,7 @@ use std::pin::Pin;
 use actix_identity::Identity;
 use actix_session::Session;
 use actix_web::dev::Payload;
-use actix_web::{web, FromRequest, HttpMessage, HttpRequest};
+use actix_web::{FromRequest, HttpMessage, HttpRequest, web};
 use serde::{Deserialize, Serialize};
 use tokio::fs::read_to_string;
 use tokio::sync::{Mutex, RwLock};

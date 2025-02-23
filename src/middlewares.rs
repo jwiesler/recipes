@@ -1,9 +1,9 @@
 use crate::DomainRootSpanBuilder;
-use actix_identity::config::LogoutBehaviour;
 use actix_identity::IdentityMiddleware;
+use actix_identity::config::LogoutBehaviour;
+use actix_session::SessionMiddleware;
 use actix_session::config::{CookieContentSecurity, PersistentSession};
 use actix_session::storage::CookieSessionStore;
-use actix_session::SessionMiddleware;
 use actix_web::cookie::{Key, SameSite};
 use std::time::Duration;
 use tracing_actix_web::TracingLogger;
