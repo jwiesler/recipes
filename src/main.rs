@@ -10,15 +10,15 @@ use actix_files::Files;
 use actix_web::body::MessageBody;
 use actix_web::dev::{ServiceRequest, ServiceResponse};
 use actix_web::web::Data;
-use actix_web::{middleware, web, App, Error, HttpResponse, HttpServer};
+use actix_web::{App, Error, HttpResponse, HttpServer, middleware, web};
 use clap::Parser;
 use notify::{RecursiveMode, Watcher};
 use tokio::sync::RwLock;
 use tracing::metadata::LevelFilter;
-use tracing::{info, Span};
+use tracing::{Span, info};
 use tracing_actix_web::{DefaultRootSpanBuilder, RootSpanBuilder};
-use tracing_subscriber::fmt::format::FmtSpan;
 use tracing_subscriber::EnvFilter;
+use tracing_subscriber::fmt::format::FmtSpan;
 
 use crate::auth::Users;
 use crate::context::Context;

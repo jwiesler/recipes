@@ -1,8 +1,8 @@
-use std::collections::hash_map::Entry;
 use std::collections::HashMap;
+use std::collections::hash_map::Entry;
 use std::str::FromStr;
 
-use comrak::{markdown_to_html, ExtensionOptions, Options, ParseOptions, RenderOptions};
+use comrak::{ExtensionOptions, Options, ParseOptions, RenderOptions, markdown_to_html};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Deserialize, Serialize)]
