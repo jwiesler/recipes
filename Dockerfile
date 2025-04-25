@@ -11,3 +11,5 @@ COPY static /static
 
 USER 2000:2000
 EXPOSE 4200
+
+ENTRYPOINT [ "/usr/local/bin/recipes" ]
