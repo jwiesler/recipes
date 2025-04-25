@@ -1,4 +1,5 @@
 FROM docker.io/rust:alpine AS builder
+RUN apk add musl-dev
 WORKDIR /src
 COPY . .
 RUN cargo build --release
