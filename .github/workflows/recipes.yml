@@ -9,8 +9,6 @@ concurrency:
 
 env:
   RUSTFLAGS: -D warnings
-  REGISTRY: ghcr.io
-  IMAGE_NAME: "${{ github.repository }}"
 
 jobs:
   lint:
