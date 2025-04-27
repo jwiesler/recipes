@@ -3,7 +3,7 @@
 #![warn(clippy::pedantic)]
 #![allow(clippy::module_name_repetitions)]
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use actix_files::Files;
@@ -11,8 +11,9 @@ use actix_web::body::MessageBody;
 use actix_web::dev::{ServiceRequest, ServiceResponse};
 use actix_web::web::Data;
 use actix_web::{App, Error, HttpResponse, HttpServer, middleware, web};
-use clap::Parser;
+use config::Environment;
 use notify::{RecursiveMode, Watcher};
+use serde::Deserialize;
 use tokio::sync::RwLock;
 use tracing::metadata::LevelFilter;
 use tracing::{Span, info};
@@ -49,13 +50,6 @@ impl RootSpanBuilder for DomainRootSpanBuilder {
     }
 }
 
-#[derive(Parser)]
-struct Cli {
-    address: String,
-    #[clap(long)]
-    cookies_key: String,
-}
-
 pub(crate) fn setup_tracing() {
     tracing_subscriber::fmt()
         .with_span_events(FmtSpan::NEW | FmtSpan::CLOSE)
@@ -67,14 +61,30 @@ pub(crate) fn setup_tracing() {
         .init();
 }
 
+#[derive(Deserialize)]
+struct Config {
+    address: String,
+    cookies_key: String,
+}
+
+impl Config {
+    fn load(path: PathBuf) -> Result<Config, config::ConfigError> {
+        let config = config::Config::builder()
+            .add_source(config::File::from(path))
+            .add_source(Environment::with_prefix("RECIPES"))
+            .build()?;
+
+        config.try_deserialize()
+    }
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     setup_tracing();
-
-    let Cli {
+    let Config {
         address,
         cookies_key,
-    } = Cli::parse_from(std::env::args_os());
+    } = Config::load("Recipes.toml".into()).unwrap();
 
     let recipes = Recipes::load_dir(Path::new("recipes")).await;
     let templates = RwLock::new(Templates::load("templates/**/*").await);
