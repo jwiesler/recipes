@@ -24,7 +24,7 @@ jobs:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USERNAME }}
           key: ${{ secrets.DEPLOY_PRIVATE_KEY }}
-          fingerprint: ${{ secrets.DEPLOY_FINGERPRINT }}
+          # fingerprint: ${{ secrets.DEPLOY_FINGERPRINT }}
   build_image:
     runs-on: ubuntu-latest
     steps:
