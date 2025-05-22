@@ -147,7 +147,7 @@ impl Users {
     pub async fn load(path: PathBuf) -> Users {
         let text = read_to_string(&path)
             .await
-            .unwrap_or_else(|e| panic!("Failed to read {path:?}: {e}"));
+            .unwrap_or_else(|e| panic!("Failed to read {}: {e}", path.display()));
         let users = serde_json::from_str(&text).unwrap();
         Users {
             index: RwLock::new(users),
