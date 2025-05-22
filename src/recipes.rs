@@ -82,7 +82,7 @@ impl Recipes {
             let path = t.path();
             let recipe = RecipesIo::read(&path)
                 .await
-                .unwrap_or_else(|e| panic!("Failed to read {:?}: {e}", t.path()));
+                .unwrap_or_else(|e| panic!("Failed to read {}: {e}", path.display()));
             let id = to_id_string(&recipe.name);
             if id != path.file_stem().unwrap().to_str().unwrap() {
                 let file_name = path.file_name().unwrap().to_str().unwrap();
