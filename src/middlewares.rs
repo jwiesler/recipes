@@ -1,6 +1,6 @@
 use crate::DomainRootSpanBuilder;
 use actix_identity::IdentityMiddleware;
-use actix_identity::config::LogoutBehaviour;
+use actix_identity::config::LogoutBehavior;
 use actix_session::SessionMiddleware;
 use actix_session::config::{CookieContentSecurity, PersistentSession};
 use actix_session::storage::CookieSessionStore;
@@ -17,7 +17,7 @@ pub(crate) fn tracing() -> TracingLogger<DomainRootSpanBuilder> {
 pub(crate) fn identity() -> IdentityMiddleware {
     IdentityMiddleware::builder()
         .visit_deadline(Some(SESSION_DURATION))
-        .logout_behaviour(LogoutBehaviour::PurgeSession)
+        .logout_behavior(LogoutBehavior::PurgeSession)
         .build()
 }
 
