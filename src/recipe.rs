@@ -44,7 +44,7 @@ impl RawRecipe {
             for i in &mut s.ingredients {
                 clean(&mut i.name);
                 i.unit = i.unit.as_ref().map(|u| u.trim().to_string());
-                i.amount = i.amount.trim().replace(',', ".").to_string();
+                i.amount = i.amount.trim().replace(',', ".");
             }
         }
         for i in &mut self.categories {
