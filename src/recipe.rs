@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::collections::hash_map::Entry;
 use std::str::FromStr;
 
-use comrak::{ExtensionOptions, Options, ParseOptions, RenderOptions, markdown_to_html};
+use comrak::{Options, markdown_to_html, options::Extension, options::Parse, options::Render};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Deserialize, Serialize)]
@@ -108,9 +108,9 @@ pub struct BakedRecipe {
 
 fn bake_md_string(s: &str) -> String {
     let options = Options {
-        extension: ExtensionOptions::default(),
-        parse: ParseOptions::default(),
-        render: RenderOptions::default(),
+        extension: Extension::default(),
+        parse: Parse::default(),
+        render: Render::default(),
     };
     markdown_to_html(s, &options)
 }
