@@ -8,7 +8,7 @@ use actix_web::cookie::{Key, SameSite};
 use std::time::Duration;
 use tracing_actix_web::TracingLogger;
 
-const SESSION_DURATION: Duration = Duration::from_secs(30 * 24 * 60 * 60);
+const SESSION_DURATION: Duration = Duration::from_hours(30 * 24);
 
 pub(crate) fn tracing() -> TracingLogger<DomainRootSpanBuilder> {
     TracingLogger::<DomainRootSpanBuilder>::new()
