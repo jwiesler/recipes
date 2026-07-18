@@ -87,7 +87,7 @@ async fn main() -> std::io::Result<()> {
     } = Config::load("Recipes.toml".into()).unwrap();
 
     let recipes = Recipes::load_dir(Path::new("recipes")).await;
-    let templates = RwLock::new(Templates::load("templates/**/*").await);
+    let templates = RwLock::new(Templates::load_directory(PathBuf::from("templates/")).await);
     let users = Users::load(Path::new("users.json").into()).await;
     let context = Data::new(Context {
         templates,
@@ -116,7 +116,7 @@ async fn main() -> std::io::Result<()> {
                 tokio::time::sleep(Duration::from_millis(200)).await;
                 tx.mark_unchanged();
                 info!("Reloading templates");
-                let templates = Templates::load("templates/**/*").await;
+                let templates = Templates::load_directory(PathBuf::from("templates/")).await;
                 *context.templates.write().await = templates;
             }
         });
