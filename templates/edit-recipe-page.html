@@ -40,7 +40,7 @@
 {% endif %}
 {% endblock navbar %}
 
-{%- macro ingredientRow(name, amount, unit) -%}
+{%- component ingredientRow(name: string, amount: string, unit: string) -%}
 <div class="ingredients-row-wrapper hover-show-display-base vspace-between-small-r">
     <div class="toolbar toolbar-left toolbar-1 vspace-between-small">
         <button tabindex="-1" class="tool-button button-delete fa fa-times"></button>
@@ -56,9 +56,9 @@
         </div>
     </div>
 </div>
-{%- endmacro -%}
+{%- endcomponent -%}
 
-{%- macro ingredientsSection(heading, ingredients) -%}
+{%- component ingredientsSection(heading: string, ingredients: array) -%}
 <div class="ingredients-section section">
     <div class="toolbar-wrapper">
         <div class="toolbar toolbar-left toolbar-3 vspace-between-small">
@@ -75,14 +75,14 @@
     </div>
     <div class="ingredients-table">
         {%- for i in ingredients -%}
-        {{- self::ingredientRow(name=i.Name, amount=i.Amount, unit=i.Unit) -}}
+        {{- <ingredientRow name={i.Name} amount={i.Amount} unit={i.Unit | default (value="", boolean=true)} /> -}}
         {%- endfor -%}
     </div>
     <div>
         <button tabindex="-1" class="tool-button button-add fa fa-plus hover-show-visible"></button>
     </div>
 </div>
-{%- endmacro -%}
+{%- endcomponent -%}
 
 {% block content %}
 <div class="content">
@@ -109,7 +109,7 @@
                     <div id="ingredients-sections" class="spacing-between">
                         {% if recipe %}
                         {% for s in recipe.IngredientsSections %}
-                        {{ self::ingredientsSection(heading=s.Heading, ingredients=s.Ingredients) }}
+                        {{ <ingredientsSection heading={s.Heading} ingredients={s.Ingredients} /> }}
                         {% endfor %}
                         {% endif %}
                     </div>
@@ -199,10 +199,10 @@
     </div>
     <div id="defaults">
         <div id="default-row">
-            {{- self::ingredientRow(name="", amount="", unit="") -}}
+            {{- <ingredientRow name="" amount="" unit="" /> -}}
         </div>
         <div id="default-section">
-            {{- self::ingredientsSection(heading="", ingredients=[]) -}}
+            {{- <ingredientsSection heading="" ingredients={[]} /> -}}
         </div>
     </div>
 </div>

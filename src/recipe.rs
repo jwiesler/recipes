@@ -1,6 +1,6 @@
-use std::collections::HashMap;
 use std::collections::hash_map::Entry;
 use std::str::FromStr;
+use std::{collections::HashMap, io::Cursor};
 
 use comrak::{Options, markdown_to_html, options::Extension, options::Parse, options::Render};
 use serde::{Deserialize, Serialize};
@@ -116,7 +116,9 @@ fn bake_md_string(s: &str) -> String {
 }
 
 pub(crate) fn bake_string(s: &str) -> String {
-    tera::escape_html(s)
+    let mut output = Cursor::new(Vec::new());
+    tera::escape_html(s, &mut output).unwrap();
+    String::from_utf8(output.into_inner()).unwrap()
 }
 
 fn make_ingredient_summaries(sections: &[IngredientsSection]) -> Vec<IngredientSummary> {

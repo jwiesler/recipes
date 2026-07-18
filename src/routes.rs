@@ -4,6 +4,7 @@ use actix_web::HttpRequest;
 use actix_web::web::{Data, Form, Html, Json, Path, Redirect, ServiceConfig};
 use serde::Deserialize;
 use serde_json::{Value, json};
+use tera::context;
 use tracing::instrument;
 
 use crate::auth::{Authenticated, NoPermission, WritePermission};
@@ -14,24 +15,21 @@ use crate::recipe::{RawRecipe, bake_string};
 
 #[actix_web::get("/")]
 async fn page_home(ctx: Data<Context>, _: Authenticated<NoPermission>) -> Html {
-    let recipes: HashMap<String, Value> = ctx
-        .recipes.list().await.iter()
-        .map(|(k, v)| (k.clone(), json!({
-            "name": v.name.clone(),
-            "categories": v.categories.iter().cloned().map(Value::String).collect::<Vec<_>>(),
-        })))
-        .collect();
-    let context = json!({
-        "base_url": "",
-        "recipes": recipes
-    });
+    let context = {
+        let recipes: HashMap<String, Value> = ctx
+            .recipes.list().await.iter()
+            .map(|(k, v)| (k.clone(), json!({
+                "name": v.name.clone(),
+                "categories": v.categories.iter().cloned().map(Value::String).collect::<Vec<_>>(),
+            })))
+            .collect();
+        context!(
+            base_url => "",
+            recipes => &recipes
+        )
+    };
 
-    let rendered = ctx
-        .templates
-        .read()
-        .await
-        .render("home.html", context)
-        .unwrap();
+    let rendered = ctx.templates.read().await.render("home.html", &context);
     Html::new(rendered)
 }
 
@@ -40,17 +38,12 @@ async fn page_login(
     ctx: Data<Context>,
     Authenticated(NoPermission(user)): Authenticated<NoPermission>,
 ) -> Html {
-    let context = json!({
-        "base_url": "",
-        "user": user.as_ref().map_or(Value::Null, |u| Value::String(bake_string(u))),
-    });
+    let context = context!(
+        base_url => "",
+        user => &user.as_ref().map_or(Value::Null, |u| Value::String(bake_string(u))),
+    );
 
-    let rendered = ctx
-        .templates
-        .read()
-        .await
-        .render("login.html", context)
-        .unwrap();
+    let rendered = ctx.templates.read().await.render("login.html", &context);
     Html::new(rendered)
 }
 
@@ -61,35 +54,35 @@ async fn page_recipe(
     id: Path<String>,
     _: Authenticated<NoPermission>,
 ) -> Result<Html, Error> {
-    let id = id.into_inner().to_lowercase();
-    let recipe = ctx.recipes.get(&id).await?;
-    let value = serde_json::to_value(recipe.bake()).unwrap();
-    let context = json!({
-        "base_url": "",
-        "id": id,
-        "recipe": value,
-    });
+    let context = {
+        let id = id.into_inner().to_lowercase();
+        let recipe = ctx.recipes.get(&id).await?;
+        let mut context = context!(
+            base_url => "",
+            id => &id,
+        );
+        context.insert_value("recipe", tera::Value::from_serializable(&recipe.bake()));
+        context
+    };
 
     let rendered = ctx
         .templates
         .read()
         .await
-        .render("recipe-page.html", context)
-        .unwrap();
+        .render("recipe-page.html", &context);
     Ok(Html::new(rendered))
 }
 
 #[actix_web::get("/create")]
 async fn page_create(ctx: Data<Context>, _: Authenticated<NoPermission>) -> Html {
-    let context = json!({
-        "base_url": "",
-    });
+    let context = context!(
+        base_url => "",
+    );
     let rendered = ctx
         .templates
         .read()
         .await
-        .render("edit-recipe-page.html", context)
-        .unwrap();
+        .render("edit-recipe-page.html", &context);
     Html::new(rendered)
 }
 
@@ -102,18 +95,19 @@ async fn page_edit(
 ) -> Result<Html, Error> {
     let id = id.into_inner().to_lowercase();
     let recipe = ctx.recipes.get(&id).await?;
-    let value = serde_json::to_value(recipe).unwrap();
-    let context = json!({
-        "base_url": "",
-        "id": id,
-        "recipe": value,
-    });
+    let context = {
+        let mut context = context!(
+            base_url => "",
+            id => &id,
+        );
+        context.insert_value("recipe", tera::Value::from_serializable(&recipe));
+        context
+    };
     let rendered = ctx
         .templates
         .read()
         .await
-        .render("edit-recipe-page.html", context)
-        .unwrap();
+        .render("edit-recipe-page.html", &context);
     Ok(Html::new(rendered))
 }
 
@@ -219,7 +213,7 @@ pub(crate) fn configure(c: &mut ServiceConfig) {
 
 #[cfg(test)]
 pub(crate) mod tests {
-    use std::path::Path;
+    use std::path::{Path, PathBuf};
 
     use actix_web::body::MessageBody;
     use actix_web::dev::{ServiceFactory, ServiceRequest, ServiceResponse};
@@ -237,7 +231,7 @@ pub(crate) mod tests {
     pub(crate) async fn make_app_data() -> Data<Context> {
         let recipes = Recipes::load_dir(Path::new("tests/recipes")).await;
         let users = Users::load(Path::new("tests/users.json").into()).await;
-        let templates = RwLock::new(Templates::load("templates/**/*").await);
+        let templates = RwLock::new(Templates::load_directory(PathBuf::from("templates/")).await);
         Data::new(Context {
             templates,
             recipes,
