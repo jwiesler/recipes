@@ -19,9 +19,9 @@
     <h1>Rezepte</h1>
     <div id="categories" class="d-flex justify-content-center gap-2"></div>
     <ul class="recipes-list text-content">
-        {%- for id, recipe in recipes | pairs | sort(attribute='1.name') -%}
-        <li data-categories="{{ recipe.categories | join(sep=',') }}"><a href="{{ base_url }}/recipe/{{ id }}">{{
-            recipe.name }}</a></li>
+        {%- for r in recipes | pairs | sort(attribute='1.name') -%}
+        <li data-categories="{{ r.1.categories | join(sep=',') }}"><a href="{{ base_url }}/recipe/{{ r.0 }}">{{
+            r.1.name }}</a></li>
         {%- endfor -%}
     </ul>
 </div>
