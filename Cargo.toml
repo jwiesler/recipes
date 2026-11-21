@@ -1,6 +1,6 @@
 [package]
 name = "recipes"
-version = "0.1.43"
+version = "0.1.44"
 edition = "2024"
 
 [dependencies]
@@ -25,7 +25,7 @@ serde = { version = "1.0.204", features = ["derive"] }
 
 unicode-normalization = "0.1.23"
 
-notify = { version = "8.0.0", default-features = false, features = ["macos_kqueue"] }
+notify = { version = "9.0.0", default-features = false, features = ["macos_kqueue"] }
 
 config = "0.15.8"
 
